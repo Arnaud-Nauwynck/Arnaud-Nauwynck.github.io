@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Troubleshooting Jekyll errors on first use"
-date:   2014-10-27 00:20:18
+date:   2014-10-28 23:00:00
 categories: jekyll
 tags: jekyll
 ---
@@ -113,4 +113,9 @@ site.url: http://username.github.io
 {% endhighlight %}
 
 Once your files will have been uploaded to your target web site, you would not requires this temporary hack anymore
+
+
+<h3>Encountered ERROR 5 :  404 file not found   for target web site image http://username.github.io/ ... ?? </h3>
+
+unresolved yet the second day I used Jekyll while writing this post !
 
