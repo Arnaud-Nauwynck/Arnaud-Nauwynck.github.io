@@ -208,7 +208,10 @@ http://pygments.org/languages/
 
 
 * Java
+
+{% highlight liquid %}
 {% raw  %}
+
 {% highlight java %}
 public class Foo implements IFoo {
    @Arg(name="test")
@@ -217,8 +220,10 @@ public class Foo implements IFoo {
    public static void main(String[] args) {
    }
 }
-{% endhighlight %}
+{% endhighlight java %}
+
 {% endraw %}
+{% endhighlight liquid %}
 
 {% highlight java %}
 public class Foo implements IFoo {
@@ -228,17 +233,43 @@ public class Foo implements IFoo {
    public static void main(String[] args) {
    }
 }
-{% endhighlight %}
+{% endhighlight java %}
 
 * Ruby  (Liquid is itself written in Ruby... so cited here)
+{% highlight liquid %}
+{% raw  %}
 {% highlight ruby %}
 def foo
   puts 'foo'
 end
-{% endhighlight %}
+{% endhighlight ruby %}
+{% endraw %}
+{% endhighlight liquid %}
+
+
+{% highlight ruby %}
+def foo
+  puts 'foo'
+end
+{% endhighlight ruby %}
+
 
 
 * Xml (with tons of &amp;lt;tag/&amp;gt; for escaping &lt;tag/> in rendered html...)
+
+{% highlight liquid %}
+{% raw  %}
+
+{% highlight xml %}
+<tagA attr="1">
+	<tagB/>
+	&c;
+</tagA>
+{% endhighlight %}
+
+{% endraw %}
+{% endhighlight liquid %}
+
 {% highlight xml %}
 <tagA attr="1">
 	<tagB/>
@@ -247,7 +278,22 @@ end
 {% endhighlight %}
 
 
+
 * Html (with tons of &amp;lt;tag/&amp;gt; for escaping &lt;tag/> in rendered html...):
+
+{% highlight liquid %}
+{% raw  %}
+
+{% highlight html %}
+<div>
+   <A href="mylink.png">lylink.png</A>
+</div>
+{% endhighlight %}
+
+{% endraw %}
+{% endhighlight liquid %}
+
+
 {% highlight html %}
 <div>
    <A href="mylink.png">lylink.png</A>
@@ -298,4 +344,7 @@ Then finally, I took up the intermediate generated html, copy&pasted it in this 
 
 {% endraw %}
 {% endhighlight %}
+
+You may browse the real source page in this Blog github:
+<A href="https://raw.githubusercontent.com/Arnaud-Nauwynck/Arnaud-Nauwynck.github.io/master/_posts/2014-10-28-jekyll-edit-markdown-samples.markdown">raw source code... https://github.com/Arnaud-Nauwynck/Arnaud-Nauwynck.github.io/blob/master/_posts/2014-10-28-jekyll-edit-markdown-samples.markdown</A>"
 
