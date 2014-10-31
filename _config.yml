@@ -7,7 +7,7 @@ baseurl: ""
 
 # TEMPOARY before asset/ images are uploaded
 # url: "http://localhost:4000"
-url: "http://arnaud.nauwynck.github.io"
+url: "http://arnaud-nauwynck.github.io"
 
 
 github_username:  Arnaud-Nauwynck
