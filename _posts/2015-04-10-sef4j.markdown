@@ -1,0 +1,162 @@
+---
+layout: post
+title:  "Sef4J : Simple Event Facade for Java : Library for Performance Monitoring - Events - Metrics Aggregator"
+date:   2015-04-10 11:00:00
+categories: 
+tags: performance monitoring github projects
+---
+
+
+<h1>Sef4j - Name and motivation</h1>
+
+Sef4j stands as initials for "Simple Event Facade for Java"
+It tries to offer a simple API for Events and Monitoring, as simple as slf4j (previously Log4J) is to Log.
+Maybe "Semf4j" would be a more appropriate name?
+
+Another project name could have been "Performance Monitoring Facade 4 Java" : perf4j, but the name is already registered.
+see https://github.com/perf4j/perf4j
+Unfortunatly, the project seems to do very few things compared to mine (maybe a pull request for them?).
+
+Sef4j, is a "yet-another" performance monitoring framework, which has now many free/commercial equivalent.
+Open source "equivalent framework" would be Dropwizard Metrics (formely Codahale Metrics), JavaMelody, or many other...
+Commercial equivalent are ultra impressives (and ultra expensive...).
+
+
+
+
+
+The big differences with Sef4j compared to Dropwizard Metrics is that Sef4j captures applicative stack traces, not flat traces counters like Metrics.
+But it also allows you to manually instrument applicative parameters that make sense in your business code, and use them to categorize differents types of counters for the same stack trace. For example in a financial application, you may want to have several counters for the same pricing method depending of the portfolio used, instruments, thirdparties... because different rules are used to dispatch to different algorithms and data repositories. 
+
+Counters may be in-memory tree, that aggregate events with predefined or user-defined listener code. 
+The framework for instrumenting follows open-close principles! ... If offers you events for push() and pop() for every instrumented methods, you are free to treat these events for aggregating what make sense, and producing counter, histograms, alerts, events, logs... 
+
+
+
+A drawing might help understand these simple things:
+Say you have 2 entry points Web services, internally calling several services, and then DAOs jdbc queries.
+
+In Dropwizard Metrics, you would instrument it like that:
+{% highlight java %}
+public class MyWebService {
+   @Timed
+   public MyResult myService1(param1, param2...) {
+      dao.myQuery1(..)
+   }
+   @Timed
+   public MyResult myService2(param1, param2...) {
+      dao.myQuery1(..)
+      dao.myQuery2(..)      
+   }
+}
+
+public class MyDAO {
+   @Timed
+   public MyResult myQuery1(param1, param2...) {
+      jdbc / jpa query...
+   }
+   @Timed
+   public MyResult myQuery2(param1, param2...) {
+      jdbc / jpa query...
+   }
+}
+{% endhighlight %}
+
+In DropWizard Metrics, You will get 4 flat metric counters:
+{% highlight text %}
+MyWebService.myServices1  --> counter stats, ..
+MyWebService.myServices2  --> counter stats, ..
+MyDAO.myQuery1  --> counter stats, ..
+MyDAO.myQuery2  --> counter stats, ..
+{% endhighlight %}
+
+How can you known how are linked performance problems in DAO.myQuery1 and MyWebService entrypoint 1/2 ?.. You can't.
+In Sef4j as in many J2EE profiler tools, you will get a tree of performance counters
+
+{% highlight text %}
+/
++-- MyWebService.myServices1  --> counter stats, ..
+|     |
+|     +-- MyDAO.myQuery1  --> counter stats, ..
+|     +-- MyDAO.myQuery2  --> counter stats, ..
+|
++-- MyWebService.myServices2  --> counter stats, ..
+      |
+      +-- MyDAO.myQuery1  --> counter stats, ..
+      +-- MyDAO.myQuery2  --> counter stats, ..   
+{% endhighlight %}
+
+Some tools can offer syntaxic sugar help, to show aggregation per sub-path :so inline intermediate nodes to be able to show flat results as Dropwizard Metrics 
+{% highlight text %}
+aggregated MyDAO.myQuery1 =   MyWebService.myServices1/MyDAO.myQuery1  +  MyWebService.myServices2/MyDAO.myQuery1
+{% endhighlight %}
+
+
+In badly configured tools, you unfortunatly get the full exact java stack trace, instead of the applicative stack trace with all the intermediate applicative code, and boilerplate framework code:
+{% highlight text %}
+at com.oracle.driver...
+at org.sef4j ...
+at org.hibernate...
+at org.springframework...
+at java.lang.reflect..
+at 
+at myapp.MyDAO
+at 
+at myapp.MyWebService
+at ..
+at org.springframework
+at javax.servlet..
+at tomcat..
+{% endhighlight %}
+
+
+With Sef4j, you can instrument method with relevant applicative name-values 
+
+{% highlight java %}
+public class MyWebService {
+   public MyResult myService1(param1, param2...) {
+		try(AppCallStack.method("myService").WithParam("param1", param1).push())   // ==> attach inherited property to current Thread
+			MyDAO.myQuery1()
+			..
+		}// => finally... pop("myService")
+   }
+}
+{% endhighlight %}
+
+
+In Sef4j, virtual nodes can be introcuced to split counters per applicative criteria
+{% highlight java %}
+public class MyWebService {
+   public MyResult myService1(param1, param2...) {
+		try(AppCallStack.method("myService").WithParam("param1", param1).push())   // ==> attach inherited property to current Thread
+			try (AppCallStack.method("perParam:" + param1)) {
+			
+				MyDAO.myQuery1()
+				..
+			} // => finally pop("perParam")
+		}// => finally... pop("myService")
+   }
+}
+{% endhighlight %}
+
+You will get a tree of stat counter like
+
+
+{% highlight text %}
+/
++-- MyWebService.myServices1  --> counter stats, ..
+|     |
+|     +-- perParam1:value1
+|     |    +-- MyDAO.myQuery1  --> counter stats, ..
+|     |    +-- MyDAO.myQuery2  --> counter stats, ..
+|     +-- perParam1:value2
+|     |    +-- MyDAO.myQuery1  --> counter stats, ..
+|     |    +-- MyDAO.myQuery2  --> counter stats, ..
+|     +-- perParam1:value3
+|     |    +-- MyDAO.myQuery1  --> counter stats, ..
+|     |    +-- MyDAO.myQuery2  --> counter stats, ..
+|     ...
+{% endhighlight %}
+
+
+
