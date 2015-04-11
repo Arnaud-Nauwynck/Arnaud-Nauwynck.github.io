@@ -72,7 +72,17 @@ MyDAO.myQuery2  --> counter stats, ..
 {% endhighlight %}
 
 How can you known how are linked performance problems in DAO.myQuery1 and MyWebService entrypoint 1/2 ?.. You can't.
+<p/>
 In Sef4j as in many J2EE profiler tools, you will get a tree of performance counters
+
+{% highlight java %}
+public class MyWebService {
+   @Sef4j
+   public MyResult myService1(param1, param2...) {
+      ...
+   }
+}
+{% endhighlight java %}
 
 {% highlight text %}
 /
@@ -88,13 +98,104 @@ In Sef4j as in many J2EE profiler tools, you will get a tree of performance coun
 {% endhighlight %}
 
 
-If you still want to show a flat list of counters from this rich tree data structure, you can: it is only a matter of grouping and summing per node name.
+
+
+Internally, it calls push and pop events, and dispatch them to thread local handlers in a very efficient way (few nanos of overhead only, no temporary object allocation)... Therefore the name Sef4j.
+
+For free, you can also have logs if you want them, and only on demand on method start/stop or when method is slower than expected:
+
+{% highlight java %}
+public class MyWebService {
+   @Sef4j(logPush=false, logPop=300) // <= log on pop only, when time > 300 millis
+   public MyResult myService1(param1, param2...) {
+      ...
+   }
+}
+{% endhighlight java %}
+
+
+{% highlight text %}
+[yyyy/MM/dd HH:mm:ss.sss] MyWebService.myService1() ... took: 500 millis
+{% endhighlight text %}
+
+
+<h2>Statistic Histogram and Pending Metrics Counters</h2> 
+
+By default, you have handlers that increment in-memory statistic counter tree :
+{% highlight text %}
+/
++-- MyWebService.myServices1  --> Histogram stats + Pending Counters
+|     |
+|     +-- MyDAO.myQuery1  --> Histogram stats + Pending Counters
+|     +-- MyDAO.myQuery2  --> Histogram stats + Pending Counters
+|
++-- MyWebService.myServices2  --> Histogram stats + Pending Counters
+      |
+      +-- MyDAO.myQuery1  --> Histogram stats + Pending Counters
+      +-- MyDAO.myQuery2  --> Histogram stats + Pending Counters
+{% endhighlight %}
+
+
+For each counter stats, you have an efficient lock-free data structure that contains:
+<ul>
+<li>current number of pending threads + sum of pending threads starttime</li>
+<li>number of finished executions + sum of execution time, using log-based histogram per time</li>
+</ul>
+
+Histograms are hard-coded with 10 buckets, using this logarithmic range: 
+<ul>
+ <li> bucket[0]: 0           millis</li>
+ <li> bucket[1]: 1    - 31   millis</li>
+ <li> bucket[2]: 32   - 63   millis</li>
+ <li> bucket[3]: 64   - 127  millis</li>
+ <li> bucket[4]: 128  - 255  millis</li>
+ <li> bucket[5]: 256  - 511  millis</li>
+ <li> bucket[6]: 512  - 1023 millis</li>
+ <li> bucket[7]: 1024 - 2047 millis</li>
+ <li> bucket[8]: 2048 - 4095 millis</li>
+ <li> bucket[9]: more than 4096 millis</li>
+</ul> 
+
+
+The finished executions times make sense to display as long-term graph:  refresh every 30 minutes in Graphana + InfluxDB, aggregate per method using all buckets ... It shows the average speed of your method.
+When zooming into details, you can have details per method, and find fast or exceptionnaly slow executions.
+<p/>
+
+The pending thread information can be used to display the current running activity of you server. It particulary makes sense to display it as pseudo-realtime grapĥ: refresh every 30 seconds in Graphana +  InfluxDB, aggregated for all entry-points...
+<p/>
+
+You may also raise alarms base on threshold for suspect method not ending fast enough.
+
+
+Internally, the pending data structure counter is also a very interresting and efficient (lock-free, no memory allocation) data structure!
+
+Here is an explanation 
+Suppose you have these chronology:
+<ul>
+<li>at time t1: Thread1 - enter =>  pendingCount=1, pendingSumStart=t1</li>
+<li>at time t2: Thread2 - enter =>  pendingCount=2, pendingSumStart=t1+t2</li>
+<li>at time t3: Thread3 - enter =>  pendingCount=3, pendingSumStart=t1+t2+t3</li>
+<li>at time t4: Thread1 - leave =>  pendingCount=2, pendingSumStart=t2+t3</li>
+<li>at time t5: Thread3 - leave =>  pendingCount=1, pendingSumStart=t2</li>
+<li>...</li>
+</ul> 
+
+At any time (t), you have the number of threads running a method, and the sum of time already consumed by theses threads.
+Example: t between t4 and t5 => you have 2 threads running, then entered in average at time (t2+t3)/2, so then are running in average from "t - (t2+t3)/2" millis. The total time/Cpu already elapsed is "t2+t3 - 2*t" 
+
+
+<h2>Displaying Statistics Counters Tree Structure as Flat List with Group-By</h2>
+
+If you still want to show a flat list of statistic counters from this rich tree data structure, you can: it is only a matter of grouping and summing per node name.
 
 {% highlight text %}
 sum(**/MyDAO.myQuery1) =   
      MyWebService.myServices1/MyDAO.myQuery1
    + MyWebService.myServices2/MyDAO.myQuery1
 {% endhighlight %}
+
+A typical usage is to find the worst jdbc queries, independently of where they are called (cf jdbc-logger tool in previous post).
+
 
 
 <h1>Instrumented Method - Applicative Stack Trace - Applicative Tree Path</h1>
@@ -130,7 +231,7 @@ With Sef4j, you can instrument method basically by putting a pre()/post() aspect
 {% highlight java %}
 public class MyWebService {
 
-   @Sef4jAspect // <== using whatever AOP framework (Aspectj, ...)
+   @Sef4j // <== using whatever AOP framework (Aspectj, ...)
    public MyResult myService1(param1, param2...) {
       ...
    }
