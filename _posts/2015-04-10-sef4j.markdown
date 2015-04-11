@@ -7,20 +7,113 @@ tags: performance monitoring github projects
 ---
 
 
-<h1>Sef4j - Name and motivation</h1>
+<h1>Sef4j Github Project Information</h1>
 
-Sef4j stands as initials for "Simple Event Facade for Java"
+<a href="https://github.com/Arnaud-Nauwynck/sef4j">https://github.com/Arnaud-Nauwynck/sef4j</a>
+
+this page: <a href="http://arnaud-nauwynck.github.io/2015/04/10/sef4j.html>http://arnaud-nauwynck.github.io/2015/04/10/sef4j.html</a>
+
+
+other decriptions (slides to come soon)
+
+
+Get Source
+{% highlight text %}
+$ git clone --depth 1 https://github.com/Arnaud-Nauwynck/sef4j.git
+$ cd sef4j
+$ mvn clean install -DskipTests
+{% endhighlight %}
+
+
+Use it in your project...
+using maven pom.xml:
+{% highlight xml %}
+   <properties>
+     <sef4j.version>1.0.0</sef4j.version>
+   </properties>
+   ...
+   <dependency>
+     <groupId>org.sef4j</groupId>
+     <artifactId>sef4j-callstack</artifactId>
+     <version>${sef4j.version}</version>
+   </dependency>
+{% endhighlight xml %}
+
+
+
+See also : source code for documentation.
+<br/>
+Some important classes contains ascii-art doc comments.
+Examples: 
+<a href="https://raw.githubusercontent.com/Arnaud-Nauwynck/sef4j/master/sef4j-callstack/src/main/java/org/sef4j/callstack/CallStack.java">CallStack.java</a>, 
+<a href="https://raw.githubusercontent.com/Arnaud-Nauwynck/sef4j/master/sef4j-core/src/main/java/org/sef4j/core/api/proptree/PropTreeNode.java">PropTreeNode.java</a>, 
+<a href="https://raw.githubusercontent.com/Arnaud-Nauwynck/sef4j/master/sef4j-core/src/main/java/org/sef4j/core/helpers/exporters/fragments/FragmentsProvidersExporter.java">FragmentsProvidersExporter.java</a> ...
+
+As of 2015-04, there is only me as developper... All contributors are welcome!
+<br/>
+This project is inspired from other past pojects developped and used in production, but this project itself is not currently used in production... only a 'clone' of it.
+
+
+
+<h1>Sef4j - Name</h1>
+
+Sef4j stands as initials for "Simple Event Facade for Java".
+<br/>
+
+This is not a typo, its name really looks like "Slf4j : Simple Logging Facade for Java"
+<br/>
+
+The motto of Sef4j <br/>
+<em>Sef4j is to Event Monitoring what Slf4j is to Log : Simple and Efficient</em>
+<br/>
+
+
 It tries to offer a simple API for Events and Monitoring, as simple as slf4j (previously Log4J) is to Log.
-Maybe "Semf4j" would be a more appropriate name?
+<br/>
+Maybe "Semf4j" would be a more appropriate name (M for monitoring)?
+<br/>
 
 Another project name could have been "Performance Monitoring Facade 4 Java" : perf4j, but the name is already registered.
 see https://github.com/perf4j/perf4j
 Unfortunatly, the project seems to do very few things compared to mine (maybe a pull request for them?).
+<br/>
 
 Sef4j, is a "yet-another" performance monitoring framework, which has now many free/commercial equivalent.
 Open source "equivalent framework" would be Dropwizard Metrics (formely Codahale Metrics), JavaMelody, or many other...
 Commercial equivalent are ultra impressives (and ultra expensive...).
 <p/>
+
+
+<h1>Sef4j - Goals and Non-Goals</h1>
+
+Sef4j aims to be not only a "Performance" profiler framework, but also an "Event" framework, for plugging Event Handlers as "Appenders" onto simple "Event Logger" from code, so as to produce logging, monitoring, alerts ... to ElasticSearch, InfluxDB, Zooker ... 
+
+<div>
+When you want logs in the jvm (not only java), you don't call "System.out.println()" (shame on you if you still do).<br/>
+You just add slf4j + logback to your CLASSPATH, put a logback.groovy (xml) file... <br/>
+And you know it will "just work fine" without worrying about it. <br/>
+If you wan't more appenders, you will have more appenders extensions. 
+</div>
+
+<p/>
+Now transpose this sentence to Sef4j:
+<br/>
+<div>
+When you want performance and monitoring in the jvm (not only java), you don't call "System.currentTimeMillis()" (shame on you if you still do).<br/>
+You just add sef4j to your CLASSPATH, put a sef4j.groovy (xml) file...<br/>
+And you know it will "just work fine" without worrying about it.<br/>
+If you wan't more performance metrics and monitoring, you will have more extensions.
+</div>
+
+
+Non Goals:
+
+Sef4j is not an even-driven framework for chaining reactive events as an asynchronous programmation model. See Akka instead, or any other projects</br>
+Sef4j is not an EventSource framework for doing CQRS programmintg style.</BR>
+Sef4j is not a backend store for events, or a middleware. See Apache Kafka, Apache ActiveMQ, ZeroMQ, or any other *-MQ framework for that.</BR>
+
+However, Sef4j will support Appenders for pushing event to these backend systems.
+
 
 
 <h1>Difference with DropWizard Metrics : Tree of Statistics Counters</h1>
