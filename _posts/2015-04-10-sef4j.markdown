@@ -20,20 +20,21 @@ Unfortunatly, the project seems to do very few things compared to mine (maybe a 
 Sef4j, is a "yet-another" performance monitoring framework, which has now many free/commercial equivalent.
 Open source "equivalent framework" would be Dropwizard Metrics (formely Codahale Metrics), JavaMelody, or many other...
 Commercial equivalent are ultra impressives (and ultra expensive...).
+<p/>
 
 
-
-
+<h1>Difference with DropWizard Metrics : Tree of Statistics Counters</h1>
 
 The big differences with Sef4j compared to Dropwizard Metrics is that Sef4j captures applicative stack traces, not flat traces counters like Metrics.
 But it also allows you to manually instrument applicative parameters that make sense in your business code, and use them to categorize differents types of counters for the same stack trace. For example in a financial application, you may want to have several counters for the same pricing method depending of the portfolio used, instruments, thirdparties... because different rules are used to dispatch to different algorithms and data repositories. 
+<p/>
 
 Counters may be in-memory tree, that aggregate events with predefined or user-defined listener code. 
+<br/>
 The framework for instrumenting follows open-close principles! ... If offers you events for push() and pop() for every instrumented methods, you are free to treat these events for aggregating what make sense, and producing counter, histograms, alerts, events, logs... 
+<p/>
 
-
-
-A drawing might help understand these simple things:
+Here is a typical example showing a tree of statistic counters, compared to flat statistic list as in Dropwizard Metrics.<br/>
 Say you have 2 entry points Web services, internally calling several services, and then DAOs jdbc queries.
 
 In Dropwizard Metrics, you would instrument it like that:
@@ -86,13 +87,27 @@ In Sef4j as in many J2EE profiler tools, you will get a tree of performance coun
       +-- MyDAO.myQuery2  --> counter stats, ..   
 {% endhighlight %}
 
-Some tools can offer syntaxic sugar help, to show aggregation per sub-path :so inline intermediate nodes to be able to show flat results as Dropwizard Metrics 
+
+If you still want to show a flat list of counters from this rich tree data structure, you can: it is only a matter of grouping and summing per node name.
+
 {% highlight text %}
-aggregated MyDAO.myQuery1 =   MyWebService.myServices1/MyDAO.myQuery1  +  MyWebService.myServices2/MyDAO.myQuery1
+sum(**/MyDAO.myQuery1) =   
+     MyWebService.myServices1/MyDAO.myQuery1
+   + MyWebService.myServices2/MyDAO.myQuery1
 {% endhighlight %}
 
 
-In badly configured tools, you unfortunatly get the full exact java stack trace, instead of the applicative stack trace with all the intermediate applicative code, and boilerplate framework code:
+<h1>Instrumented Method - Applicative Stack Trace - Applicative Tree Path</h1>
+
+What I call "Applicative Stack Trace" is the filtering of the real java stack trace when preserving only nodes of interrests : your annotated/instrumented methods, not all this java.lang.*, com.sun.reflect.*, org.springframework.* intermediates nodes you have... 
+
+{% highlight text %}
+at myapp.MyDAO
+at myapp.MyWebService
+{% endhighlight %}
+
+instead of 
+
 {% highlight text %}
 at com.oracle.driver...
 at org.sef4j ...
@@ -110,21 +125,61 @@ at tomcat..
 {% endhighlight %}
 
 
-With Sef4j, you can instrument method with relevant applicative name-values 
-
+With Sef4j, you can instrument method basically by putting a pre()/post() aspect within your method
+ 
 {% highlight java %}
 public class MyWebService {
+
+   @Sef4jAspect // <== using whatever AOP framework (Aspectj, ...)
    public MyResult myService1(param1, param2...) {
-		try(AppCallStack.method("myService").WithParam("param1", param1).push())   // ==> attach inherited property to current Thread
-			MyDAO.myQuery1()
-			..
-		}// => finally... pop("myService")
+      ...
    }
+   
 }
+{% endhighlight java %}
+
+If you prefer, you can write the equivalent java code yourself, 
+which is exactly 2 lines (+ 1 line for import) for jdk8, 5 lines for jdk < 8:
+
+{% highlight java %}
+import org.sef4j.callstack.LocalCallStack;
+
+public class MyWebService {
+
+ /** instrumented code with sef4j, using jdk8 Closeable try-finally */
+ public MyResult myService1(param1, param2...) {
+   try (StackPopper toPop = LocalCallStack.meth("MyWebService", "myService1").push()) {
+      ...
+   }
+ }
+ /** instrumented code with sef4j, using explicit try-finally (jdk<8) */
+ public MyResult myService1(param1, param2...) {
+   StackPopper toPop = LocalCallStack.meth("MyWebService", "myService1").push();
+   try {
+      ...
+   } finally {
+      toPop.close();
+   }
+ }
+}
+{% endhighlight java %}
+
+
+you can enrich your method instrumentation : you have a fluent api to build information on the current method of the current thread, put info in it, then call push().
+
+
+{% highlight java %}
+StackPopper toPop = LocalCallStack.method("MyWebService", "myService1")
+        .withParam("param1", param1) // <= add method parameter info
+        .withInheritedProp("param2", param2) // <= add inherited property (will be available as ThreadLocal for all child calls)
+        .withLog(LOG, false, 300) // <= no log in push(), log in pop() only if time exceed 300 ms
+        .withProgressExpectedCount(20) // <= expected 20 progress steps in a loop 
+        .push();
+        
 {% endhighlight %}
 
 
-In Sef4j, virtual nodes can be introcuced to split counters per applicative criteria
+Pushed method don't have to be real method, virtual nodes can be introduced to split counters per applicative criteria
 {% highlight java %}
 public class MyWebService {
    public MyResult myService1(param1, param2...) {
