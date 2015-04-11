@@ -84,9 +84,13 @@ Commercial equivalent are ultra impressives (and ultra expensive...).
 <p/>
 
 
-<h1>Sef4j - Goals and Non-Goals</h1>
+<h1>Sef4j - Goals : How to consider it</h1>
 
 Sef4j aims to be not only a "Performance" profiler framework, but also an "Event" framework, for plugging Event Handlers as "Appenders" onto simple "Event Logger" from code, so as to produce logging, monitoring, alerts ... to ElasticSearch, InfluxDB, Zooker ... 
+
+Before Sef4j you add a lot of specialized monitoring frameworks for J2EE apis, for Jdbc, Servlets, ... but nothing for instrumenting your own code.
+
+Don't consider Sef4j as a limited framework for events only, of for performance mertics only, or of j2ee profiling only... Sef4j is for all you can do to enrich performance and monitoring of events in your code.
 
 <div>
 When you want logs in the jvm (not only java), you don't call "System.out.println()" (shame on you if you still do).<br/>
@@ -105,8 +109,8 @@ And you know it will "just work fine" without worrying about it.<br/>
 If you wan't more performance metrics and monitoring, you will have more extensions.
 </div>
 
-
-Non Goals:
+<p/>
+<h3>Sef4j - Non Goals</h3>
 
 Sef4j is not an even-driven framework for chaining reactive events as an asynchronous programmation model. See Akka instead, or any other projects</br>
 Sef4j is not an EventSource framework for doing CQRS programmintg style.</BR>
