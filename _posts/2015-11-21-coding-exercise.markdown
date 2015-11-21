@@ -6,6 +6,13 @@ categories:
 tags: live-coding exercise video backup
 ---
 
+
+
+Link of the Live Coding video lasting 1 hour  
+ <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.mkt">live-coding.mkt</A>  
+
+
+
 <h1>Introduction : Live Coding - Student Exercise Correction</h1>
 
 I asked my students to code in Java a "File Synchronisation Tool", using SHA-1 comparisons.
@@ -111,8 +118,22 @@ For displaying key-press and mouse-click, I have chosen to install and launched 
 
 I should also (but did not) have configured "MouseFeed", which is and Eclipse plugin that shows you when you mouse-click instead of using shortcuts. This plugin is very cool to learn important shortcut, and force you improving your Eclipse efficiency.
 
-finally, I have searched a tool to do the screen video capture ...
-Under linux (Debian), after googling it, there was a dozen of candidates. <BR/>
+<BR/>
+
+Finally, here we are, I recorder me coding for 1 hour, converted the file to .MKT file format (=13 Mo) , and here it is:
+
+   <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.mkt">live-coding.mkt</A>  
+
+
+
+
+
+<h2>More on screen capture video compression file formats</h2>  
+
+
+To do screen video cpature, I have searched a tool for my Debian Linux workstation...
+After googling it, there was a dozen of candidates. <BR/>
+
 Strangely (or not!!), most of them dit not work at all (crashed when launched !!!), where unusable, or very un-intuitive to use.
 I am a busy guy, I don't want to read 600 pages of manual for that kind of task.
 I repeated 4 times:
@@ -160,7 +181,6 @@ This is the main reason why I put on this website the .cap file ... if you are i
 Someday, I might find a converter to a much better compressed and standard file format. 
 
 
-To play the video, use this link <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.cap">live-coding.mkt</A> (converted 13Mo .MKT video file) 
 
 To play the video in the recorded proprietray .CAP format, download the 36Mo <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.cap">live-coding.cap</A> file, 
 and download the <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/screen-player.jar">screen-player.jar</A> ... Launch it:
@@ -170,8 +190,6 @@ java -cp java-screen-player.jar com.wet.wired.jsr.player.JPlayer live-coding.cap
 {% endhighlight text %}
  
 
-
-<h2>More on screen capture video compression file formats</h2>  
 
 It is clear that 36Mo is still a big file, even it is much smaller than .mov file (1.5Go).<BR/>
 
@@ -204,8 +222,6 @@ It is a pity than the project java-screen-converter does not convert directly to
  
 Someone interrested to contribute to  
 <a href="https://github.com/bspkrs/java-screen-recorder.git">github: java-screen-recorder.git</a> for doing this ?
-
-
 
 
 
