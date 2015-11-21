@@ -83,6 +83,92 @@ $ wc -l ./src/fr/iut/tp/backupsha/BackupSHAMain.java ./src/fr/iut/tp/backupsha/B
 {% endhighlight text %}
 
 
+The JUnit tests is here:
+{% highlight java %}
+    @Test
+    public void testRecursiveScanDir_dir1() {
+        // Prepare
+        File inputDir = new File("src/test/dir1");
+        // Perform
+        Map<String,List<String>> res = sut.recursiveScanDir(inputDir);
+        // Post-check
+        Assert.assertEquals(2, res.size());
+        String shaTata = "ffffffae5477ffffffdd7effffffef7bffffffc830ffffff894451fffffff232fffffffc28fffffff6ffffff9b3fffffff8f";
+        List<String> foundTatFiles = res.get(shaTata);
+        Assert.assertEquals(2, foundTatFiles.size());
+        Assert.assertEquals("/tata-copy.txt", foundTatFiles.get(0));
+        Assert.assertEquals("/tata.txt", foundTatFiles.get(1));
+        
+        String shaToto = "ffffffe6ffffffe8ffffffea7465fffffff12e4d3b5a67a4c4dffffffc6ffffff98436b3478";
+        List<String> foundTotoFiles = res.get(shaToto);
+        Assert.assertEquals(1, foundTotoFiles.size());
+        Assert.assertEquals("/toto.txt", foundTotoFiles.get(0));
+    }
+    
+    @Test
+    public void testCompare() {
+        // Prepare
+        Map<String, List<String>> dir1 = sut.recursiveScanDir(new File("src/test/dir1"));
+        Map<String, List<String>> dir2 = sut.recursiveScanDir(new File("src/test/dir2"));
+        // Perform
+        List<String> resCommands = sut.compareBySHA(dir1, dir2);
+        // Post-check
+        Assert.assertEquals(4, resCommands.size());
+        Assert.assertEquals("cp 'test/dir1/tata.txt' 'test/dir2/tata.txt'", resCommands.get(0));
+        Assert.assertEquals("cp 'test/dir1/toto.txt' 'test/dir2/toto.txt'", resCommands.get(1));
+        Assert.assertEquals("rm 'test/dir2/new.txt'", resCommands.get(2));
+        Assert.assertEquals("rm 'test/dir2/tata.txt'", resCommands.get(3));        
+    }
+{% endhighlight java %}
+
+
+And the Java code outline is here
+
+Basically, there is a main() to scan the 2 directories and compare the 2 Maps by SHA-1 of List of paths.
+
+{% highlight java %}
+public class BackupSHAMain {
+
+    private String src = "test/dir1";
+    private String dest = "test/dir2";
+
+    public static void main(String[] args) {
+        BackupSHAMain app = new BackupSHAMain();
+        app.parseArgs(args);
+        app.run();
+    }
+    private void parseArgs(String[] args) {
+        // ..
+    }
+    private void run() {
+        Map<String,List<String>> sha2filesSrc = recursiveScanDir(new File(src));
+        Map<String,List<String>> sha2filesDest = recursiveScanDir(new File(dest));
+        List<String> commands = compareBySHA(sha2filesSrc, sha2filesDest);
+        System.out.println(commands);
+    }
+    
+    public Map<String, List<String>> recursiveScanDir(File file) {
+        Map<String, List<String>> res = new HashMap<String, List<String>>();
+        recursiveScanDir(file, "", res);
+        return res;
+    }
+    private void recursiveScanDir(File currDir, String currPath, Map<String, List<String>> res) {
+        // recursive scan dir and files... for each file, compute its SHA1 and add it to res map
+    }
+    private String file2SHA(File file) {
+        // compute SHA1
+    }
+    public List<String> compareBySHA(Map<String, List<String>> sha2filesSrc, Map<String, List<String>> sha2filesDest) {
+        // ... compare for each SHA1, the List of occurrence files from src dir and destination dir
+    }
+    private void compareFileOccurrences(List<String> srcPathes, List<String> destPathes, List<String> resCommands) {
+        // ...
+    }
+}
+{% endhighlight java %}
+
+
+
 
 The main part takes ~100 lines of code, in a total of less than 200 lines of codes, JUnit tests included.
 
@@ -114,7 +200,7 @@ I tend to avoid mouse-clicking wherever possible, because it is just slower... a
 
 For displaying key-press and mouse-click, I have chosen to install and launched  "key-mon" tool
 
-<img src="key-mn.png" />
+<img src="{{site.url}}/assets/posts/2015-11-21-coding-exercise/key-mon-screenshot.png" />
 
 I should also (but did not) have configured "MouseFeed", which is and Eclipse plugin that shows you when you mouse-click instead of using shortcuts. This plugin is very cool to learn important shortcut, and force you improving your Eclipse efficiency.
 
@@ -204,6 +290,7 @@ We could descrbe that images are combinations of these low level primitives:
 <li> around the cursor change, image block are often shifted to the left or to the right</li>
 <li> most changing blocks in the image are often copy&paste image blocks from already played frames (example: click => change color, then revert to previous color)</li>
 <li> bitmap data ar epixel, but in fact comes from graphic drawing primitives: line, rectangle, text fonts, icons</li> 
+</ul>
 <BR/>
 
 Screen capture and teleconferencing to share a screen is SO MUCH common, it is used in Citrix applications, YouTube tutorials, Team work programming, Chats ...
