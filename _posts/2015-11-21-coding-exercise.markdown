@@ -105,7 +105,7 @@ For preparing 1hour of live-coding, it actually took me more than 3 hours of wor
 The longest was to find the tool to show the key-press/mouse-clicks and to do a video capture of all.
 I tend to avoid mouse-clicking wherever possible, because it is just slower... and more harmfull for your "carpal tunnel" (you might get surgical operation on your hand sometimes otherwise...). see <a href="https://en.wikipedia.org/wiki/Carpal_tunnel">wikipedia: carpal tunnel</a>
 
-For displaying key-press and mouse-click, I have chose to install and launch  "key-mon" tool
+For displaying key-press and mouse-click, I have chosen to install and launched  "key-mon" tool
 
 <img src="key-mn.png" />
 
@@ -142,32 +142,68 @@ It worked like a charm. Presenting me a minimalistic and efficient app with only
 Internally, it writes to a temporary file... And once started, you have a button "Stop", and "Save" (which rename the temp file to the destination you ask).
 <BR/>
 
-The huge advantage of it is that it writes the video file on the fly in a proprietary(!) file format ".cap", btu it is very very efficiently, using an internal GZIP stream of PNG(?) screen shots... simple but efficient!
-Then you can replaay it,  either normal speed, or fast speed... and convert it to ".mov" standard format.
+The huge advantage of it is that it writes the video file on the fly in a proprietary(!) file format ".cap", but it is very very efficiently, using an internal GZIP stream of bitmaps... simple but efficient!
+Then you can replay it,  either normal speed, or fast speed... and convert it to ".mov" standard format.
 <BR/>
 
-For 1 hour of video capture of 1900x1080,  the .cap file is 36Mo ONLY  ... while the standard .mov file is 1.5 Go !!! 
+For 1 hour of video capture of 1900x1080,  the .cap file is 36Mo ONLY  ... while the converted .mov file is 1.5 Go, and the .MKT file is 3x smaller: 13Mo !!! 
 <BR/>
 
 {% highlight text %}
 $ ls -lh live*
--rw-r--r-- 1 arnaud arnaud  36M Nov 21 16:40 live-coding-tp-backup-sha.cap
--rw-r--r-- 1 arnaud arnaud 1.5G Nov 21 17:20 live-coding-tp-backup-sha.mov
+-rw-r--r-- 1 arnaud arnaud  36M Nov 21 16:40 live-coding.cap
+-rw-r--r-- 1 arnaud arnaud  13M Nov 21 22:32 live-coding.mkv
+-rw-r--r-- 1 arnaud arnaud 1.5G Nov 21 17:20 live-coding.mov
 {% endhighlight text %}
 
 This is the main reason why I put on this website the .cap file ... if you are interrested in seing the video!
 Someday, I might find a converter to a much better compressed and standard file format. 
 
 
-To play the video, download the 36Mo <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.cap">live-coding.cap</A> file, 
+To play the video, use this link <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.cap">live-coding.mkt</A> (converted 13Mo .MKT video file) 
+
+To play the video in the recorded proprietray .CAP format, download the 36Mo <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.cap">live-coding.cap</A> file, 
 and download the <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/screen-player.jar">screen-player.jar</A> ... Launch it:
 
 {% highlight text %}
-java -cp java-screen-player.jar com.wet.wired.jsr.player.JPlayer
+java -cp java-screen-player.jar com.wet.wired.jsr.player.JPlayer live-coding.cap
 {% endhighlight text %}
  
- 
 
+
+<h2>More on screen capture video compression file formats</h2>  
+
+It is clear that 36Mo is still a big file, even it is much smaller than .mov file (1.5Go).<BR/>
+
+Mov file compression algorithm is based on lossy JPEG (Fourier consinus transformationon using real number), so it is clearly not adpated to compress RGB integers image generated from computer screen (using only horizontal/vertical rectangles, and Fonts : vector graphics, not raster bitmap)
+<BR/>
+   
+Basically, a video of someone typing text in an editor is a video with a very LOW BIT RATE information between each frame!
+We could descrbe that images are combinations of these low level primitives:
+<ul>
+<li> Only the few pixels around the cursor are changing from one frame image to the next one.</li>
+ The cursor itself may not part of the image in the screen capture recorder, it could be computed and redrawn above</li> 
+<li> around the cursor change, image block are often shifted to the left or to the right</li>
+<li> most changing blocks in the image are often copy&paste image blocks from already played frames (example: click => change color, then revert to previous color)</li>
+<li> bitmap data ar epixel, but in fact comes from graphic drawing primitives: line, rectangle, text fonts, icons</li> 
+<BR/>
+
+Screen capture and teleconferencing to share a screen is SO MUCH common, it is used in Citrix applications, YouTube tutorials, Team work programming, Chats ...
+
+There should be extremely efficient algorithms to use the knowledge of image and video structures, and compress them much more efficiently than a regular camera based film.
+    
+<BR/>
+
+I did few searches with Google (and DuckDuckGo), and I found that lossless .MKV, .WMV, .VP9 might be interresting candidates.
+
+My first try was to convert the .mov to .mkt, which I did using "handbrake" application.<BR/>
+
+The result I got confirmed my thoughts... .MKT file is 13mo, so 3x smaller than .cap file !
+
+It is a pity than the project java-screen-converter does not convert directly to .MKT file format, but produces hugly intermediate .MOV  file (which is huge, and loss quality with JPEG computations) ... then recompressing it with .MKT is not optimal... it should be even much better (perhaps less than 10Mo) with a direct .CAP to .MKT conversion.   
+ 
+Someone interrested to contribute to  
+<a href="https://github.com/bspkrs/java-screen-recorder.git">github: java-screen-recorder.git</a> for doing this ?
 
 
 
