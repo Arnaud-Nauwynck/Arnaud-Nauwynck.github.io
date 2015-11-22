@@ -19,15 +19,15 @@ I asked my students to code in Java a "File Synchronisation Tool", using SHA-1 c
 
 Basically, after the course on java.util.List, java.util.HashMap and java.io.* , I wanted to give them an exercise to practise what they had learned.<BR/> 
 
-Students level in java are varying from begniners to intermediate. 
+Students level in java are varying from beginners to intermediates. 
 They are 20-21 years old, and working part-time in a company, and part time at university (3 years after french graduate "baccalaureat")
 
-They had approximatly 1 month to give me their work, as an eclipse source code project, and including tests.
+They had approximatly 1 month to give me their work, as an eclipse source code project, including tests.
 
 
 <h1>Description of the Synchronizing Tool</h1>
 
-The "File Synchronisation Tool" must compare recursively 2 directories (aka sourceDir and destinationDir), and compute the list of copy/removal of files to get the destination directory be in sync with the source directory.
+The "File Synchronisation Tool" must compare recursively 2 directories (aka sourceDir and destinationDir), and compute the list of copy/removal files commands to get the destination directory be in sync with the source directory.
 
 For example, suppose you want to compare source directory "/data/dir1" to destination directory "/data/dir1.backup", 
 and you have some files added in source "/data/dir1/a/foo-new.txt", modified "/data/dir1/a/bar-modified.txt", and deleted "/data/dir1/a/baz-deleted.txt" (does not exists in source dir, only in "/data/dir1.backup/a/baz-deleted.txt")   
@@ -61,7 +61,7 @@ As as example, suppose you have a directory with the following content
 /a/b/bar.txt                SHA1= e7f8a...
 {% endhighlight text %}
 
-then the data signature of theses files is a Map with the following content:
+then the data signature of theses files would be a Map with the following content:
 {% highlight text %}
 
 {
@@ -71,7 +71,7 @@ then the data signature of theses files is a Map with the following content:
 {% endhighlight text %}
  
 
-<h1>Correction : Code Difficulty and Coding Speed Performance</h1>
+<h1>Code Difficulty and Coding Speed Performance</h1>
 
 The code is pretty simple, as the following shell command on the correction source code shows it:
 
@@ -180,29 +180,36 @@ Being fast is possible only because you repeat something you already knows, or k
 It should take you ~1 hour to code, if you are also an experimented developper, but for my students it was their first coding of such tool ... I received by email the first projects from my students (by asking several times) after more than 15 days, but I think they have spend only few (~3 ?) days on it.<BR/>
 Unfortunatly, only 4 out of 18 students had done something, and the results submitted were FAR FAR from expected, both in term of results, performance optimisations and code readability/quality !!<BR/>
 
-I had to reply to them several times, to explain what was wrong in their programs<BR/>
-Basically, the forgot to do a recursive scan of the directory, they only listed 1 level of directory. Then they failed to understand that the SHA1 was computed on the file content, that it was to converted to hexa string (or whatever array class in java implementing equals() and hashCode() ), and that they had handle the possibility of file content duplicated several times ...  
+I had to reply to them several times, to explain what was wrong in their programs.<BR/>
+Basically, the forgot to do a recursive scan of the directory, they only listed 1 level of directory. Then they failed to understand that the SHA1 was computed on the file content, that it should be converted to hexa string (or whatever array class in java implementing equals() and hashCode() ), and that they had to handle the possibility of file content duplicated several times (they used Map<String,String> instead of Map<String,List<String>>) ...
 
 
 
 
-<h1>Correction - Live Coding Video</h1>
+<h1>Live Coding Video Recording</h1>
 
-For preparing 1hour of live-coding, it actually took me more than 3 hours of work: 
+For preparing 1 hour of live-coding, it actually took me more than 6 hours of work: 
 <ul>
 <li> 1 hour to peek tools in linux to do video screen capture, and key-press/mouse-click display</li>
 <li> 1 hour to code</li>
-<li> 1  hour to write this post on github.io</li>
+<li> 1  hour to convert the video file to a compressed but standard file format</li>
+<li> 3  hours to write this post on github.io</li>
 </ul>
 
 The longest was to find the tool to show the key-press/mouse-clicks and to do a video capture of all.
+<BR/>
 I tend to avoid mouse-clicking wherever possible, because it is just slower... and more harmfull for your "carpal tunnel" (you might get surgical operation on your hand sometimes otherwise...). see <a href="https://en.wikipedia.org/wiki/Carpal_tunnel">wikipedia: carpal tunnel</a>
 
 For displaying key-press and mouse-click, I have chosen to install and launched  "key-mon" tool
 
 <img src="{{site.url}}/assets/posts/2015-11-21-coding-exercise/key-mon-screenshot.png" />
 
-I should also (but did not) have configured "MouseFeed", which is and Eclipse plugin that shows you when you mouse-click instead of using shortcuts. This plugin is very cool to learn important shortcut, and force you improving your Eclipse efficiency.
+When watching at the video, you can see that I hardly ever use the mouse, but I use few eclipse shortcuts here and there.
+
+I should also (but did not) have configured "MouseFeed", which is and Eclipse plugin that shows you when you mouse-click instead of using shortcuts. This plugin is very cool to learn important shortcuts, and force you improving your Eclipse efficiency.
+<BR/>
+For example, for fast switching from java source code editer to corresponding Test code, I use "CTRL+J" which is defined in an eclipse plugin called "MoreUnit".
+
 
 <BR/>
 
@@ -211,13 +218,27 @@ Finally, here we are, I recorder me coding for 1 hour, converted the file to .MK
    <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.mkt">live-coding.mkt</A>  
 
 
+For training myself, I might should redo and redo again this exercise:
+<ul>
+<li> try to reduce time from 1 hour to 45 minutes ?</li>
+<li> try to reduse code size from 200 lines to 150 ? (using shorter code style, java 8 lambda, ..)</li>
+<li> try not to use the mouse at all (from ~ 20 clicks to 0?)</li>
+<li> try to do do less typo errors (edit then delete 1 char)</li>
+<li> try to do less do-write and undo-write of codes (type directly the final code, when choosing local variables names, method names, if-tehn-else / for / try-catch structures) </li>
+<li> less hesitations </li>
+<li> always write Tests code first before Code (TDD=Test Driven Development, Agile practise), </li>
+<li> etc. </li>
+</ul>
+
+An interesting measurment would be to see the number of "key stroke", and the number of "Delete" or "Up arrow" pressed.<BR/>
+Even better, I would like to see the speed of "key strokes", as a function of time, to see when coding is slowing.   
 
 
 
 <h2>More on screen capture video compression file formats</h2>  
 
 
-To do screen video cpature, I have searched a tool for my Debian Linux workstation...
+To do screencast video capture, I have searched a tool for my Debian Linux workstation...
 After googling it, there was a dozen of candidates. <BR/>
 
 Strangely (or not!!), most of them dit not work at all (crashed when launched !!!), where unusable, or very un-intuitive to use.
@@ -230,6 +251,8 @@ I repeated 4 times:
 <li> click on the big green button if found it, and if it seems to work</li>
 <li> trash it, and get another one</li>
 </li>
+</ul>
+<BR/>
   
 I finally choose a very simple and efficient one from github (using java source-code for it!)
 It is called "screen-recorder", and there is also a tool "screen-player", and "screen-converter"
@@ -244,6 +267,7 @@ For recording my video, I launched "screen-recorder.sh"  which internally was
 {% highlight text %}
 java -cp screen-recorder.jar com.wet.wired.jsr.recorder.JRecorder
 {% endhighlight text %}
+<BR/>
 
 It worked like a charm. Presenting me a minimalistic and efficient app with only a "start" button.
 Internally, it writes to a temporary file... And once started, you have a button "Stop", and "Save" (which rename the temp file to the destination you ask).
@@ -279,7 +303,7 @@ java -cp java-screen-player.jar com.wet.wired.jsr.player.JPlayer live-coding.cap
 
 It is clear that 36Mo is still a big file, even it is much smaller than .mov file (1.5Go).<BR/>
 
-Mov file compression algorithm is based on lossy JPEG (Fourier consinus transformationon using real number), so it is clearly not adpated to compress RGB integers image generated from computer screen (using only horizontal/vertical rectangles, and Fonts : vector graphics, not raster bitmap)
+Mov file compression algorithm is based on lossy JPEG (Fourier cosinus transformationon using float numbers and roundings), so it is clearly not adpated to compress RGB integers image generated from computer screen (using only horizontal/vertical rectangles, and Fonts : vector graphics, not raster bitmap)
 <BR/>
    
 Basically, a video of someone typing text in an editor is a video with a very LOW BIT RATE information between each frame!
