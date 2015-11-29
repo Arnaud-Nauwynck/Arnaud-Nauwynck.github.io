@@ -8,8 +8,8 @@ tags: live-coding exercise video backup
 
 
 
-Link of the Live Coding video lasting 1 hour  
- <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.mkt">live-coding.mkt</A>  
+Link of the Live Coding video lasting 28 minutes  
+ <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.mkv">live-coding.mkv</A>  
 
 
 
@@ -85,40 +85,64 @@ $ wc -l ./src/fr/iut/tp/backupsha/BackupSHAMain.java ./src/fr/iut/tp/backupsha/B
 
 The JUnit tests is here:
 {% highlight java %}
+public class BackupToolMainTest {
+
+    // sut= System Under Test
+    BackupToolMain sut = new BackupToolMain();
+    
+    private static final String SHA1_FOO = "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33";
+    private static final String BAR_SHA = "62cdb7020ff920e5aa642c3d4066950dd1f01f4d";
+    
     @Test
-    public void testRecursiveScanDir_dir1() {
+    public void testComputeSHA() throws Exception {
         // Prepare
-        File inputDir = new File("src/test/dir1");
         // Perform
-        Map<String,List<String>> res = sut.recursiveScanDir(inputDir);
+        String res = sut.computeSHAFile(new File("test/dir1/foo.txt"));
         // Post-check
-        Assert.assertEquals(2, res.size());
-        String shaTata = "ffffffae5477ffffffdd7effffffef7bffffffc830ffffff894451fffffff232fffffffc28fffffff6ffffff9b3fffffff8f";
-        List<String> foundTatFiles = res.get(shaTata);
-        Assert.assertEquals(2, foundTatFiles.size());
-        Assert.assertEquals("/tata-copy.txt", foundTatFiles.get(0));
-        Assert.assertEquals("/tata.txt", foundTatFiles.get(1));
+        Assert.assertEquals(SHA1_FOO, res);
+    }
+
+    @Test
+    public void testComputeSHA_fooCopy() throws Exception {
+        // Prepare
+        // Perform
+        String res = sut.computeSHAFile(new File("test/dir1/subdir/foo-copy.txt"));
+        // Post-check
+        Assert.assertEquals(SHA1_FOO, res);
+    }
+
+    @Test
+    public void testRecursiveSHAToPathes() {
+        // Prepare
+        // Perform
+        Map<String, List<String>> res = sut.recursiveSHAToPathes(new File("test/dir1"));
+        // Post-check
+        Assert.assertEquals(2,  res.size());
+        List<String> lsFoos = res.get(SHA1_FOO);
+        Assert.assertEquals(2, lsFoos.size());
+        Assert.assertEquals("/subdir/foo-copy.txt", lsFoos.get(0));
+        Assert.assertEquals("/foo.txt", lsFoos.get(1));
         
-        String shaToto = "ffffffe6ffffffe8ffffffea7465fffffff12e4d3b5a67a4c4dffffffc6ffffff98436b3478";
-        List<String> foundTotoFiles = res.get(shaToto);
-        Assert.assertEquals(1, foundTotoFiles.size());
-        Assert.assertEquals("/toto.txt", foundTotoFiles.get(0));
+        List<String> lsBar = res.get(BAR_SHA);
+        Assert.assertEquals(1, lsBar.size());
+        Assert.assertEquals("/bar.txt", lsBar.get(0));
     }
     
     @Test
     public void testCompare() {
         // Prepare
-        Map<String, List<String>> dir1 = sut.recursiveScanDir(new File("src/test/dir1"));
-        Map<String, List<String>> dir2 = sut.recursiveScanDir(new File("src/test/dir2"));
+        sut.setSrcDir("test/dir1");
+        sut.setDestDir("test/dir2");
         // Perform
-        List<String> resCommands = sut.compareBySHA(dir1, dir2);
+        List<String> res = sut.compare();
         // Post-check
-        Assert.assertEquals(4, resCommands.size());
-        Assert.assertEquals("cp 'test/dir1/tata.txt' 'test/dir2/tata.txt'", resCommands.get(0));
-        Assert.assertEquals("cp 'test/dir1/toto.txt' 'test/dir2/toto.txt'", resCommands.get(1));
-        Assert.assertEquals("rm 'test/dir2/new.txt'", resCommands.get(2));
-        Assert.assertEquals("rm 'test/dir2/tata.txt'", resCommands.get(3));        
+        Assert.assertEquals(4, res.size());
+        Assert.assertEquals("rm   'test/dir2/subdir/foo-copy.txt'", res.get(3));
+        Assert.assertEquals("rm   'test/dir2/subdir/file-added.txt'", res.get(2));
+        Assert.assertEquals("cp 'test/dir1/bar.txt'  'test/dir2/bar.txt'", res.get(0));
+        Assert.assertEquals("cp 'test/dir1/subdir/foo-copy.txt'  'test/dir2/subdir/foo-copy.txt'", res.get(1));
     }
+}
 {% endhighlight java %}
 
 
@@ -127,57 +151,144 @@ And the Java code outline is here
 Basically, there is a main() to scan the 2 directories and compare the 2 Maps by SHA-1 of List of paths.
 
 {% highlight java %}
-public class BackupSHAMain {
+public class BackupToolMain {
 
-    private String src = "test/dir1";
-    private String dest = "test/dir2";
-
+    private String srcDir = "test/dir1";
+    private String destDir = "test/dir2";
+    
     public static void main(String[] args) {
-        BackupSHAMain app = new BackupSHAMain();
+        BackupToolMain app = new BackupToolMain();
         app.parseArgs(args);
         app.run();
     }
+
     private void parseArgs(String[] args) {
-        // ..
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.equals("-i")) {
+                srcDir = args[++i];
+            } else if (arg.equals("-o")) {
+                destDir = args[++i];
+            } else {
+                throw new RuntimeException("unrecognised arg");
+            }
+            
+        }
     }
     private void run() {
-        Map<String,List<String>> sha2filesSrc = recursiveScanDir(new File(src));
-        Map<String,List<String>> sha2filesDest = recursiveScanDir(new File(dest));
-        List<String> commands = compareBySHA(sha2filesSrc, sha2filesDest);
-        System.out.println(commands);
+        List<String> syncCommands = compare();
+        System.out.println(syncCommands);
     }
-    
-    public Map<String, List<String>> recursiveScanDir(File file) {
+
+    /*pp*/ List<String> compare() {
+        Map<String,List<String>> sha2pathsSrc = recursiveSHAToPathes(new File(srcDir));
+        Map<String,List<String>> sha2pathsDest = recursiveSHAToPathes(new File(destDir));
+        List<String> syncCommands = compare(sha2pathsSrc, sha2pathsDest);
+        return syncCommands;
+    }
+
+    private List<String> compare(Map<String, List<String>> sha2pathsSrc, Map<String, List<String>> sha2pathsDest) {
+        List<String> resSyncCommands = new ArrayList<String>();
+        // scan 1: from destDir, find missing elt in srcDir
+        for(Map.Entry<String,List<String>> eDest : sha2pathsDest.entrySet()) {
+            String sha = eDest.getKey();
+            List<String> destPathes = eDest.getValue();
+            List<String> srcPathes = sha2pathsSrc.get(sha);
+            if (srcPathes == null) {
+                srcPathes = Collections.emptyList();
+                compareListPathes(sha, srcPathes, destPathes, resSyncCommands);
+            }
+        }
+        // scan 2: from srcDir .. find corresponding elt in destDir
+        for(Map.Entry<String,List<String>> eSrc : sha2pathsSrc.entrySet()) {
+            String sha = eSrc.getKey();
+            List<String> srcPathes = eSrc.getValue();
+            List<String> destPathes = sha2pathsDest.get(sha);
+            if (destPathes == null) {
+                destPathes = Collections.emptyList();
+            }
+            compareListPathes(sha, srcPathes, destPathes, resSyncCommands);
+        }
+        return resSyncCommands;
+    }
+
+    private void compareListPathes(String sha, List<String> srcPathes, List<String> destPathes, List<String> resSyncCommands) {
+        // scan 1: from destDir, find missing elt in srcDir
+        for(String path : destPathes) {
+            if (! srcPathes.contains(path)) {
+                resSyncCommands.add("rm   '" + destDir + path + "'");
+            }
+        }
+        // scan 2: from srcDir .. find corresponding elt in destDir
+        for(String path: srcPathes) {
+            if (! destPathes.contains(path)) {
+                resSyncCommands.add("cp '" + srcDir + path + "'  '" + destDir + path + "'");
+            }
+        }
+    }
+
+    /*pp*/ Map<String, List<String>> recursiveSHAToPathes(File file) {
         Map<String, List<String>> res = new HashMap<String, List<String>>();
-        recursiveScanDir(file, "", res);
+        recursiveSHAToPathes(file, "", res);
         return res;
     }
-    private void recursiveScanDir(File currDir, String currPath, Map<String, List<String>> res) {
-        // recursive scan dir and files... for each file, compute its SHA1 and add it to res map
+
+    private void recursiveSHAToPathes(File currDir, String currPath, Map<String, List<String>> res) {
+        for(File f : currDir.listFiles()) {
+            String childPath = currPath + "/" + f.getName();
+            if (f.isDirectory()) {
+                // recurse
+                recursiveSHAToPathes(f, childPath , res);
+            } else if (f.isFile() && f.canRead()) {
+                try {
+                    String sha = computeSHAFile(f);
+                    List<String> ls = res.get(sha);
+                    if (ls == null) {
+                        ls = new ArrayList<String>(1);
+                        res.put(sha, ls);
+                    }
+                    ls.add(childPath);
+                } catch(Exception ex) {
+                    System.err.println("Failed to read file '" + f + "' ...ignore, no rethrow");
+                }
+            } else {
+                System.err.println("Can not read file '" + f + "' ...ignore");
+            }
+        }
     }
-    private String file2SHA(File file) {
-        // compute SHA1
+
+    /*pp*/ String computeSHAFile(File file) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        try(InputStream in = new FileInputStream(file)) {
+            byte[] buffer = new byte[4096];
+            int len;
+            while((len = in.read(buffer)) != -1) {
+                md.update(buffer, 0, len);
+            }
+            byte[] bytes = md.digest();
+            return DatatypeConverter.printHexBinary(bytes).toLowerCase();
+        } 
     }
-    public List<String> compareBySHA(Map<String, List<String>> sha2filesSrc, Map<String, List<String>> sha2filesDest) {
-        // ... compare for each SHA1, the List of occurrence files from src dir and destination dir
-    }
-    private void compareFileOccurrences(List<String> srcPathes, List<String> destPathes, List<String> resCommands) {
-        // ...
-    }
-}
 {% endhighlight java %}
 
 
 
 
-The main part takes ~100 lines of code, in a total of less than 200 lines of codes, JUnit tests included.
+The main part takes 151 lines of code, and the JUnit tests 73, which makes a total of 224 lines.
 
 You might wonder that it is not so much, and it should take ~ 30 seconds per line to code, so ~1 hour to get it...<BR/> 
-Indeed, it took me ~1 hour to code it.<BR/>
+Indeed, it took me ~2 hours the first time, 1 hour the second time... and 35mn the 5th time.<BR/>
 Being fast is possible only because you repeat something you already knows, or knows how to do it... It is just the repetition and training that makes you becoming fast, like every athletes.
+<BR/>
+
+Notice that the 3-th and 4-th times, it actually took me more times than before (~1h30mn) because I added more JUnit tests, checked with linux bash command "sha1sum", and I found a bug in my hexa decimal conversion from byte[] to String... then I learned a simpler way and safer to code it. 
+<BR/>
+The 5th times, I did a small mistake in my code (forgot to scan for deletions before additions/modifications), so the result was almost good, but incorrect if you try to execute it for real. 
+<BR/>
+The video provided is the 5-th one.
 
 
-It should take you ~1 hour to code, if you are also an experimented developper, but for my students it was their first coding of such tool ... I received by email the first projects from my students (by asking several times) after more than 15 days, but I think they have spend only few (~3 ?) days on it.<BR/>
+If my students were also experimented developper, it should take them also few hours... but for them, it was their first coding of such tool ... I received by email the first projects (by asking several times) after more than 15 days, but I think they have spend only few (~3 ?) days on it.<BR/>
 Unfortunatly, only 4 out of 18 students had done something, and the results submitted were FAR FAR from expected, both in term of results, performance optimisations and code readability/quality !!<BR/>
 
 I had to reply to them several times, to explain what was wrong in their programs.<BR/>
@@ -186,153 +297,24 @@ Basically, the forgot to do a recursive scan of the directory, they only listed 
 
 
 
-<h1>Live Coding Video Recording</h1>
+<h1>More on Live Coding Video Recording ... </h1>
 
-For preparing 1 hour of live-coding, it actually took me more than 6 hours of work: 
-<ul>
-<li> 1 hour to peek tools in linux to do video screen capture, and key-press/mouse-click display</li>
-<li> 1 hour to code</li>
-<li> 1  hour to convert the video file to a compressed but standard file format</li>
-<li> 3  hours to write this post on github.io</li>
-</ul>
+It took me hours to compress my video file into a usable, standard, and not "too big" file !!!<BR/>
+I have started with a recorded file in a proprietary format (non standard, not usable for web users..) which was 30Mo.<BR/>
+I could only convert from this format to ".MOV" file which was 1.5 Go (not usable for web users, for other reasons)<BR/>
+I ended it up after several days in a MP4 file of ~ 22Mo ... but I was still very disapointed by the result<BR/>
 
-The longest was to find the tool to show the key-press/mouse-clicks and to do a video capture of all.
-<BR/>
-I tend to avoid mouse-clicking wherever possible, because it is just slower... and more harmfull for your "carpal tunnel" (you might get surgical operation on your hand sometimes otherwise...). see <a href="https://en.wikipedia.org/wiki/Carpal_tunnel">wikipedia: carpal tunnel</a>
-
-For displaying key-press and mouse-click, I have chosen to install and launched  "key-mon" tool
-
-<img src="{{site.url}}/assets/posts/2015-11-21-coding-exercise/key-mon-screenshot.png" />
-
-When watching at the video, you can see that I hardly ever use the mouse, but I use few eclipse shortcuts here and there.
-
-I should also (but did not) have configured "MouseFeed", which is and Eclipse plugin that shows you when you mouse-click instead of using shortcuts. This plugin is very cool to learn important shortcuts, and force you improving your Eclipse efficiency.
-<BR/>
-For example, for fast switching from java source code editer to corresponding Test code, I use "CTRL+J" which is defined in an eclipse plugin called "MoreUnit".
-
-
+Obviously ".MOV" format was not adapted... and/or the compression was not done with the correct parameters. Clearly, MOV is adapted to  movies (successions of natural photos), and JPEG compression is pretty good at that. But for artificial computer graphics images, it is a pity... and a shame, because such images are extremely simple (only lines, and text font), so they "should be" compressed much much more! Not only the spatial redundncy is high, but also the temporarl one (things changes very slowly on the screens, and only in the regions near the mouse / keyboard input focus). 
 <BR/>
 
-Finally, here we are, I recorder me coding for 1 hour, converted the file to .MKT file format (=13 Mo) , and here it is:
+And because I am curious about everything in computer sciences, I have spent the last few past-days/current-weeks(/incoming-monthes) searching for tools, documentations, research papers on the subject of "screencast video compression" !
 
-   <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.mkt">live-coding.mkt</A>  
-
-
-For training myself, I might should redo and redo again this exercise:
-<ul>
-<li> try to reduce time from 1 hour to 45 minutes ?</li>
-<li> try to reduse code size from 200 lines to 150 ? (using shorter code style, java 8 lambda, ..)</li>
-<li> try not to use the mouse at all (from ~ 20 clicks to 0?)</li>
-<li> try to do do less typo errors (edit then delete 1 char)</li>
-<li> try to do less do-write and undo-write of codes (type directly the final code, when choosing local variables names, method names, if-tehn-else / for / try-catch structures) </li>
-<li> less hesitations </li>
-<li> always write Tests code first before Code (TDD=Test Driven Development, Agile practise), </li>
-<li> etc. </li>
-</ul>
-
-An interesting measurment would be to see the number of "key stroke", and the number of "Delete" or "Up arrow" pressed.<BR/>
-Even better, I would like to see the speed of "key strokes", as a function of time, to see when coding is slowing.   
+I am convinced there is a better solution...
 
 
-
-<h2>More on screen capture video compression file formats</h2>  
-
-
-To do screencast video capture, I have searched a tool for my Debian Linux workstation...
-After googling it, there was a dozen of candidates. <BR/>
-
-Strangely (or not!!), most of them dit not work at all (crashed when launched !!!), where unusable, or very un-intuitive to use.
-I am a busy guy, I don't want to read 600 pages of manual for that kind of task.
-I repeated 4 times:
-<ul>
-<li> get a soft candidate from google</li>
-<li> apt-get install ..</li>
-<li> launch it </li>
-<li> click on the big green button if found it, and if it seems to work</li>
-<li> trash it, and get another one</li>
-</li>
-</ul>
-<BR/>
-  
-I finally choose a very simple and efficient one from github (using java source-code for it!)
-It is called "screen-recorder", and there is also a tool "screen-player", and "screen-converter"
-
-<BR/>
-
-<a href="https://github.com/bspkrs/java-screen-recorder.git">https://github.com/bspkrs/java-screen-recorder.git</a>
-
-<BR/>
-
-For recording my video, I launched "screen-recorder.sh"  which internally was  
-{% highlight text %}
-java -cp screen-recorder.jar com.wet.wired.jsr.recorder.JRecorder
-{% endhighlight text %}
-<BR/>
-
-It worked like a charm. Presenting me a minimalistic and efficient app with only a "start" button.
-Internally, it writes to a temporary file... And once started, you have a button "Stop", and "Save" (which rename the temp file to the destination you ask).
-<BR/>
-
-The huge advantage of it is that it writes the video file on the fly in a proprietary(!) file format ".cap", but it is very very efficiently, using an internal GZIP stream of bitmaps... simple but efficient!
-Then you can replay it,  either normal speed, or fast speed... and convert it to ".mov" standard format.
-<BR/>
-
-For 1 hour of video capture of 1900x1080,  the .cap file is 36Mo ONLY  ... while the converted .mov file is 1.5 Go, and the .MKT file is 3x smaller: 13Mo !!! 
-<BR/>
-
-{% highlight text %}
-$ ls -lh live*
--rw-r--r-- 1 arnaud arnaud  36M Nov 21 16:40 live-coding.cap
--rw-r--r-- 1 arnaud arnaud  13M Nov 21 22:32 live-coding.mkv
--rw-r--r-- 1 arnaud arnaud 1.5G Nov 21 17:20 live-coding.mov
-{% endhighlight text %}
-
-This is the main reason why I put on this website the .cap file ... if you are interrested in seing the video!
-Someday, I might find a converter to a much better compressed and standard file format. 
+More on this in following post: <A href="{{site.url}}/2015/11/29/screencast-recording-compression.html">Screencast Recording & Dedicated Computer Graphics Video Compression</A>
 
 
-
-To play the video in the recorded proprietray .CAP format, download the 36Mo <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/live-coding.cap">live-coding.cap</A> file, 
-and download the <A href="{{site.url}}/assets/posts/2015-11-21-coding-exercise/screen-player.jar">screen-player.jar</A> ... Launch it:
-
-{% highlight text %}
-java -cp java-screen-player.jar com.wet.wired.jsr.player.JPlayer live-coding.cap
-{% endhighlight text %}
- 
-
-
-It is clear that 36Mo is still a big file, even it is much smaller than .mov file (1.5Go).<BR/>
-
-Mov file compression algorithm is based on lossy JPEG (Fourier cosinus transformationon using float numbers and roundings), so it is clearly not adpated to compress RGB integers image generated from computer screen (using only horizontal/vertical rectangles, and Fonts : vector graphics, not raster bitmap)
-<BR/>
-   
-Basically, a video of someone typing text in an editor is a video with a very LOW BIT RATE information between each frame!
-We could descrbe that images are combinations of these low level primitives:
-<ul>
-<li> Only the few pixels around the cursor are changing from one frame image to the next one.</li>
- The cursor itself may not part of the image in the screen capture recorder, it could be computed and redrawn above</li> 
-<li> around the cursor change, image block are often shifted to the left or to the right</li>
-<li> most changing blocks in the image are often copy&paste image blocks from already played frames (example: click => change color, then revert to previous color)</li>
-<li> bitmap data ar epixel, but in fact comes from graphic drawing primitives: line, rectangle, text fonts, icons</li> 
-</ul>
-<BR/>
-
-Screen capture and teleconferencing to share a screen is SO MUCH common, it is used in Citrix applications, YouTube tutorials, Team work programming, Chats ...
-
-There should be extremely efficient algorithms to use the knowledge of image and video structures, and compress them much more efficiently than a regular camera based film.
-    
-<BR/>
-
-I did few searches with Google (and DuckDuckGo), and I found that lossless .MKV, .WMV, .VP9 might be interresting candidates.
-
-My first try was to convert the .mov to .mkt, which I did using "handbrake" application.<BR/>
-
-The result I got confirmed my thoughts... .MKT file is 13mo, so 3x smaller than .cap file !
-
-It is a pity than the project java-screen-converter does not convert directly to .MKT file format, but produces hugly intermediate .MOV  file (which is huge, and loss quality with JPEG computations) ... then recompressing it with .MKT is not optimal... it should be even much better (perhaps less than 10Mo) with a direct .CAP to .MKT conversion.   
- 
-Someone interrested to contribute to  
-<a href="https://github.com/bspkrs/java-screen-recorder.git">github: java-screen-recorder.git</a> for doing this ?
 
 
 
