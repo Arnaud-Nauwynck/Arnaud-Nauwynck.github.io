@@ -185,12 +185,12 @@ yo-hubot time - Reply with current time
 yo-hubot translate me &lt;phrase&gt; - Searches for a translation for the &lt;phrase&gt; and then prints that bad boy out.
 yo-hubot translate me from &lt;source&gt; into &lt;target&gt; &lt;phrase&gt; - Translates &lt;phrase&gt; from &lt;source&gt; into &lt;target&gt;. Both &lt;source&gt; and &lt;target&gt; are optional
 
-yo-hubot&lt; Cool ... I see my command 'yo-hubot lit tail &gt;servers&lt;'
+yo-hubot&gt; Cool ... I see my command 'yo-hubot lit tail &lt;servers&gt;'
 
-yo-hubot&lt; yo-hubot lit tail x y z 
-yo-hubot&lt; OK LIT will tail ... 'x y z'
+yo-hubot&gt; yo-hubot lit tail x y z 
+yo-hubot&gt; OK LIT will tail ... 'x y z'
 
-yo-hubot&lt; So cool ... my command works
+yo-hubot&gt; So cool ... my command works
 
 </PRE>
 
