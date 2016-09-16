@@ -90,6 +90,38 @@ First check that you are able to start and test your hubot :
 $ ./bin/hubot
 </PRE>
 
+<PRE>
+yo-hubot>
+
+yo-hubot> some message, not recognised by hubot
+
+yo-hubot> help
+usage:
+history 
+exit, \q - close shell and exit
+help, \? - print this usage
+clear, \c - clear the terminal screen
+
+yo-hubot> yo-hubot help
+yo-hubot> Shell: ship it - Display a motivation squirrel
+yo-hubot adapter - Reply with the adapter
+yo-hubot animate me <query> - The same thing as `image me`, except adds a few parameters to try to return an animated GIF instead.
+yo-hubot echo <text> - Reply back with <text>
+yo-hubot help - Displays all of the help commands that Hubot knows about.
+yo-hubot help <query> - Displays all help commands that match <query>.
+yo-hubot image me <query> - The Original. Queries Google Images for <query> and returns a random top result.
+yo-hubot map me <query> - Returns a map view of the area returned by `query`.
+yo-hubot mustache me <url|query> - Adds a mustache to the specified URL or query result.
+yo-hubot ping - Reply with pong
+yo-hubot pug bomb N - get N pugs
+yo-hubot pug me - Receive a pug
+yo-hubot the rules - Make sure hubot still knows the rules.
+yo-hubot time - Reply with current time
+yo-hubot translate me <phrase> - Searches for a translation for the <phrase> and then prints that bad boy out.
+yo-hubot translate me from <source> into <target> <phrase> - Translates <phrase> from <source> into <target>. Both <source> and <target> are optional
+
+yo-hubot> Cool ... now I will develop my own command...
+</PRE>
 
 
 <H3>Develop your first Hubot command</H3> 
@@ -105,6 +137,11 @@ by taking example from
 
 Here is the content of my first file
 <PRE>
+# Description:
+#   LIT commands
+#
+# Commands:
+#   hubot lit tail <servers> - Tail logs from <servers>
 
 module.exports = (robot) ->
   robot.respond /lit tail (.*)/i, (res) ->
