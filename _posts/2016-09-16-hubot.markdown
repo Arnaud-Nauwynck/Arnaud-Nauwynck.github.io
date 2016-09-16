@@ -91,11 +91,11 @@ $ ./bin/hubot
 </PRE>
 
 <PRE>
-yo-hubot>
+yo-hubot&gt;
 
-yo-hubot> some message, not recognised by hubot
+yo-hubot&gt; some message, not recognised by hubot
 
-yo-hubot> help
+yo-hubot&gt; help
 usage:
 history 
 exit, \q - close shell and exit
@@ -164,24 +164,26 @@ exit, \q - close shell and exit
 help, \? - print this usage
 clear, \c - clear the terminal screen
 
-yo-hubot&lt; yo-hubot help
-yo-hubot&lt; Shell: ship it - Display a motivation squirrel
+yo-hubot&gt; yo-hubot help
+yo-hubot&gt; Shell: ship it - Display a motivation squirrel
 yo-hubot adapter - Reply with the adapter
-yo-hubot animate me <query> - The same thing as `image me`, except adds a few parameters to try to return an animated GIF instead.
-yo-hubot echo &lt;text> - Reply back with &gt;text&lt;
+yo-hubot animate me &lt;query&gt; - The same thing as `image me`, except adds a few parameters to try to return an animated GIF instead.
+yo-hubot echo &lt;text&gt; - Reply back with &lt;text&gt;
 yo-hubot help - Displays all of the help commands that Hubot knows about.
-yo-hubot help &gt;query&lt; - Displays all help commands that match &gt;query&lt;.
-yo-hubot image me &gt;query&lt; - The Original. Queries Google Images for &gt;query&lt; and returns a random top result.
-yo-hubot lit tail &gt;servers&lt; - Tail logs from &gt;servers&lt;
-yo-hubot map me &gt;query&lt; - Returns a map view of the area returned by `query`.
-yo-hubot mustache me &gt;url|query&lt; - Adds a mustache to the specified URL or query result.
+yo-hubot help &lt;query&gt; - Displays all help commands that match &lt;query&gt;.
+yo-hubot image me &lt;query&gt; - The Original. Queries Google Images for &lt;query&gt; and returns a random top result.
+...
+yo-hubot lit tail &lt;servers&gt; - Tail logs from &gt;servers&lt;
+...
+yo-hubot map me &lt;query&gt; - Returns a map view of the area returned by `query`.
+yo-hubot mustache me &lt;url|query&gt; - Adds a mustache to the specified URL or query result.
 yo-hubot ping - Reply with pong
 yo-hubot pug bomb N - get N pugs
 yo-hubot pug me - Receive a pug
 yo-hubot the rules - Make sure hubot still knows the rules.
 yo-hubot time - Reply with current time
-yo-hubot translate me &gt;phrase&lt; - Searches for a translation for the &gt;phrase&lt; and then prints that bad boy out.
-yo-hubot translate me from &gt;source&lt; into &gt;target&lt; &gt;phrase&lt; - Translates &gt;phrase&lt; from &gt;source&lt; into &gt;target&lt;. Both &gt;source&lt; and &gt;target&lt; are optional
+yo-hubot translate me &lt;phrase&gt; - Searches for a translation for the &lt;phrase&gt; and then prints that bad boy out.
+yo-hubot translate me from &lt;source&gt; into &lt;target&gt; &lt;phrase&gt; - Translates &lt;phrase&gt; from &lt;source&gt; into &lt;target&gt;. Both &lt;source&gt; and &lt;target&gt; are optional
 
 yo-hubot&lt; Cool ... I see my command 'yo-hubot lit tail &gt;servers&lt;'
 
