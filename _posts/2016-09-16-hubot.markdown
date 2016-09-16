@@ -1,0 +1,192 @@
+---
+layout: post
+title:  "Hubot - Chat Bot"
+date:   2016-09-16 08:00:00
+categories: 
+tags: chat chatops hubot xmpp
+---
+
+<h1>Hubot - a Bot for ChatOps</h1>
+
+<H2>Hubot core source-code</H2>
+Main page: <A href="https://hubot.github.com/">https://hubot.github.com/</A>
+
+Code source: <A href="https://github.com/github/hubot">https://github.com/github/hubot</A>
+
+How small is it ...
+<PRE>
+$ git clone https://github.com/github/hubot
+$ cd src
+
+$ tree
+.
+├── adapter.coffee
+├── adapters
+│   ├── campfire.coffee
+│   └── shell.coffee
+├── brain.coffee
+├── listener.coffee
+├── message.coffee
+├── middleware.coffee
+├── response.coffee
+├── robot.coffee
+└── user.coffee
+
+$ ls -1 | wc -l
+9
+
+$ cat *.coffee | grep -v '#.*' | wc -l
+692
+</PRE>
+
+some remarks:
+There are only 9 source files (=692 lines of code), and 2 built-in adapters ('campfire' = legacy chat server at github, now 'slack', and 'shell' for debugging).
+
+<H2>Hubot modules</H2>
+
+The power comes from all the modules ... and there are thousands
+
+Github repositories of "standard scripts" : 
+<A href="https://github.com/github/hubot-scripts">https://github.com/github/hubot-scripts</A>
+There is no contributions any more added in this repositories.
+
+<A href="http://hubot-script-catalog.herokuapp.com/">http://hubot-script-catalog.herokuapp.com/</A>
+
+
+<H1>Getting started - install your own Hubot</H1>
+
+the standard way is to use yeoman generator:
+
+<PRE>
+sudo npm install -g hubot-generator 
+yo hubot
+</PRE>
+
+
+Notice that on first use of npm search... the npm search index is not fetched/computed ... and completion of adapters deoes not work.. you can not finish the "yo hubot" interactive query for "adapters:"
+
+
+After installing hubot, you get
+<PRE>
+ $ find | grep -v node_modules
+.
+./hubot-scripts.json
+./.editorconfig
+./.hubot_history
+./bin
+./bin/hubot
+./bin/hubot.cmd
+./external-scripts.json
+./.gitignore
+./scripts
+./scripts/example.coffee
+./README.md
+./package.json
+./Procfile
+</PRE>
+
+First check that you are able to start and test your hubot :
+<PRE>
+$ ./bin/hubot
+</PRE>
+
+
+
+<H3>Develop your first Hubot command</H3> 
+
+To create your first hubot command, create a file
+<PRE>
+./scripts/lit.coffee
+</PRE>
+by taking example from
+<PRE> 
+./scripts/example.coffee
+</PRE>
+
+Here is the content of my first file
+<PRE>
+
+module.exports = (robot) ->
+  robot.respond /lit tail (.*)/i, (res) ->
+    res.send "OK LIT will tail ... '#{res.match[1]}'"
+</PRE>
+
+
+Test:
+<PRE>
+$ ./bin/hubot
+
+yo-hubot>
+
+yo-hubot> some message, not recognised by hubot
+
+yo-hubot> help
+usage:
+history 
+exit, \q - close shell and exit
+help, \? - print this usage
+clear, \c - clear the terminal screen
+
+yo-hubot> yo-hubot help
+yo-hubot> Shell: ship it - Display a motivation squirrel
+yo-hubot adapter - Reply with the adapter
+yo-hubot animate me <query> - The same thing as `image me`, except adds a few parameters to try to return an animated GIF instead.
+yo-hubot echo <text> - Reply back with <text>
+yo-hubot help - Displays all of the help commands that Hubot knows about.
+yo-hubot help <query> - Displays all help commands that match <query>.
+yo-hubot image me <query> - The Original. Queries Google Images for <query> and returns a random top result.
+yo-hubot lit tail <servers> - Tail logs from <servers>
+yo-hubot map me <query> - Returns a map view of the area returned by `query`.
+yo-hubot mustache me <url|query> - Adds a mustache to the specified URL or query result.
+yo-hubot ping - Reply with pong
+yo-hubot pug bomb N - get N pugs
+yo-hubot pug me - Receive a pug
+yo-hubot the rules - Make sure hubot still knows the rules.
+yo-hubot time - Reply with current time
+yo-hubot translate me <phrase> - Searches for a translation for the <phrase> and then prints that bad boy out.
+yo-hubot translate me from <source> into <target> <phrase> - Translates <phrase> from <source> into <target>. Both <source> and <target> are optional
+
+yo-hubot> Cool ... I see my command 'yo-hubot lit tail <servers>'
+
+yo-hubot> yo-hubot lit tail x y z 
+yo-hubot> OK LIT will tail ... 'x y z'
+
+yo-hubot> So cool ... my command works
+
+</PRE>
+
+
+
+
+
+<H4>Debug Hubot</H4>
+
+Step 1 : Start the hubot nodejs for debug mode
+<PRE>
+$ coffee --nodejs --debug node_modules/.bin/hubot
+
+(node) child_process: options.customFds option is deprecated. Use options.stdio instead.
+Debugger listening on port 5858
+Hubot> [Fri Sep 16 2016 07:35:51 GMT+0200 (CEST)] WARNING Loading scripts from hubot-scripts.json is deprecated and will be removed in 3.0 (https://github.com/github/hubot-scripts/issues/1113) in favor of packages for each script.
+
+Your hubot-scripts.json is empty, so you just need to remove it.
+[Fri Sep 16 2016 07:35:51 GMT+0200 (CEST)] ERROR hubot-heroku-alive included, but missing HUBOT_HEROKU_KEEPALIVE_URL. `heroku config:set HUBOT_HEROKU_KEEPALIVE_URL=$(heroku apps:info -s  | grep web-url | cut -d= -f2)`
+[Fri Sep 16 2016 07:35:51 GMT+0200 (CEST)] INFO hubot-redis-brain: Using default redis on localhost:6379
+
+Hubot&gt;
+</PRE>
+
+Step 2: start the node-inspector (=a debugger "web page")
+<PRE>
+$ node-inspector --web-port=8081
+Node Inspector v0.12.8
+Visit http://127.0.0.1:8081/?port=5858 to start debugging.
+
+</PRE>
+
+Step 3: open your chrome browser on "http://127.0.0.1:8081/?port=5858"
+Notice, you need not open "CTRL+I" in chrome... you will not debug the node-inspector debugger..
+
+
+
+
