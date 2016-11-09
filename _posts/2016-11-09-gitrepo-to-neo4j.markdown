@@ -165,7 +165,7 @@ excellent reading books (like <A href="https://github.s3.amazonaws.com/media/pro
 </li>
 <li>online <A href="http://ndpsoftware.com/git-cheatsheet.html">Visual Git Cheat Sheet</A> </li>
 <li><A href="http://onlywei.github.io/explain-git-with-d3/">explain-git-with-d3</A> </li>
-<li> <A href="https://marklodato.github.io/visual-git-guide/index-en.html">visual-git-guide<A> </li> 
+<li> <A href="https://marklodato.github.io/visual-git-guide/index-en.html">visual-git-guide</A> </li> 
 <li> and presentations (including one of mine : <A href="http://arnaud.nauwynck.free.fr/CoursIUT/CoursIUT-IntroGIT.pdf">CoursIUT-IntroGIT.pdf</A>) </li>
 </ul>
 
