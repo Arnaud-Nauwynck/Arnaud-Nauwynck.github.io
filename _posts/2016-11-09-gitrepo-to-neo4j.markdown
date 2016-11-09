@@ -44,10 +44,11 @@ springboot-data-neo4j = springboot magic for Neo4j ...
 
 It is fun to code, at least more fun that playing stupid video games, like many students I know...
 
-More seriously, at work there are complex reporting tools trying to check informations between SVN/GIT and Jira, and then between Jira and a deployment tools...
+More seriously, at work there are complex reporting tools trying to check informations between SVN/GIT and Jira, and then between Jira and a deployment tool (XLDeploy from XebiaLabs)...
 
-One of the  goals is to check that a developped feature as specified in a Jira Issue, is deployed on developments/Tests/prods environments.
+some One of the  goals is to check that a developped feature as specified in a Jira Issue, is deployed on Developments/Tests/Prod environments.
 <BR/>
+
 Internally, a top level Jira feature request has many corresponding Jira sub-issues per deployable components, which corresponds to many GIT commits (the Jira issue id is mandatory in the git commits message ..). 
 Then jenkins builds are linked to Git commits, and produce deployable versions... which are deployed using the deployment tool... 
 
@@ -64,7 +65,7 @@ This was the subject of a team lunch-time Coding DOJO, as I organised them every
 <ul>
 <li>Download</li>
 <li>Start
-just type "./bin/neo4j start" ... or if you ar erunning on windows, and not a Windows local administrator, (cannot start a windows Service) => just use ".\bin\neo4j.bat console"
+just type "./bin/neo4j start" ... or if you are running on windows, and not a Windows local administrator, (cannot start a windows Service) => just use ".\bin\neo4j.bat console"
 </li>
 <li>open your browser on http://localhost:7474/browser
 All you have to do is to change your password on first login
@@ -73,11 +74,105 @@ All you have to do is to change your password on first login
 </ul>
 
 
+Some links:
+<ul>
+<li> <A href="https://neo4j.com/">https://neo4j.com/</A> </li>
+<li> demo in http://localhost:7474/browser </li>
+<li> <A href="https://neo4j.com/docs/cypher-refcard/current/">Cypher Cheat Sheet</A> </li>
+</ul>
+
+
+Some Example of Cypher commands:
+{% highlight %}
+
+match(r:SymbolicRepoRef) return r
+
+match(c: RevCi) return c limit 100
+
+match(u:Person) return u limit 100
+
+match(c: RevCi)-[r]-(t) return c,r,t limit 100
+
+match(c: RevCi)-[p:parent]-(c2: RevCi)  return c,p,c2 limit 100
+
+{% endhighlight %}
+
+
+Here is an extract example of Java code for inserting / reading Person in Neo4J graph database 
+{% highlight java %}
+
+@NodeEntity(label="Person")
+public class PersonIdentEntity {
+
+	private Long id;
+	
+	private String name;
+	private String emailAddress;
+	
+	// getter-setter ommited .. use Lombok some day
+}
+
+import org.springframework.data.neo4j.repository.GraphRepository;
+import fr.an.tools.git2neo4j.domain.PersonIdentEntity;
+
+/** DAO=Repository ... magically created/injected by springboot-data */ 
+public interface PersonDAO extends GraphRepository<PersonIdentEntity> {
+}
+
+@Component
+public class Git2Neo4JSyncService {
+
+	@Autowired
+	private PersonDAO personDAO;
+
+	@Transactional
+	public void syncRepo(Git git) {
+	    // find all persons from Neo4j graph db
+		Iterable<PersonIdentEntity> personEntities = personDAO.findAll();
+		
+		// traverse jgit RevCommit graphs
+		org.eclipse.jgit.lib.RevCommit revCommit = ..   
+		org.eclipse.jgit.lib.PersonIdent commitAuthor = revCommit.getAuhor();
+		
+		// if already created, find personEntities by email
+		PersonIdentEntity personEntity = ..  
+		if (personEntity == null) {
+		  // create corresponding Neo4j person entity
+		  personEntity = createPersonEntity(commitAuthor);
+		}
+	}	
+	
+	protected PersonIdentEntity createPersonEntity(PersonIdent src) {
+		PersonIdentEntity res = new PersonIdentEntity();
+		res.setEmailAddress(email);
+		res.setName(src.getName());
+
+		return personDAO.save(res);
+	}
+}
+
+{% endhighlight java %}
+
+
+
 <H2>Getting started with JGit</H2>
 
 Of course, it is mandatory to understand GIT Internals, before trying to use JGit.
-I recommend excellent reading books (like), online Visual Git Cheat Sheet, and presentations (including one of mine : <A href="http://arnaud.nauwynck.free.fr/CoursIUT/CoursIUT-IntroGIT.pdf">CoursIUT-IntroGIT.pdf</A>)
+I recommend 
+<ul>
+<li>
+excellent reading books (like <A href="https://github.s3.amazonaws.com/media/progit.en.pdf">Pro-GIT.df<</A>)
+</li>
+<li>online <A href="http://ndpsoftware.com/git-cheatsheet.html">Visual Git Cheat Sheet</A> </li>
+<li><A href="http://onlywei.github.io/explain-git-with-d3/">explain-git-with-d3</A> </li>
+<li> <A href="https://marklodato.github.io/visual-git-guide/index-en.html">visual-git-guide<A> </li> 
+<li> and presentations (including one of mine : <A href="http://arnaud.nauwynck.free.fr/CoursIUT/CoursIUT-IntroGIT.pdf">CoursIUT-IntroGIT.pdf</A>) </li>
+</ul>
 
+
+{% highlight java %}
+
+{% endhighlight java %}
 
 
 
