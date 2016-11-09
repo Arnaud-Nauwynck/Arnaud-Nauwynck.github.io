@@ -161,7 +161,7 @@ Of course, it is mandatory to understand GIT Internals, before trying to use JGi
 I recommend 
 <ul>
 <li>
-excellent reading books (like <A href="https://github.s3.amazonaws.com/media/progit.en.pdf">Pro-GIT.df<</A>)
+excellent reading books (like <A href="https://github.s3.amazonaws.com/media/progit.en.pdf">Pro-GIT.df</A>)
 </li>
 <li>online <A href="http://ndpsoftware.com/git-cheatsheet.html">Visual Git Cheat Sheet</A> </li>
 <li><A href="http://onlywei.github.io/explain-git-with-d3/">explain-git-with-d3</A> </li>
