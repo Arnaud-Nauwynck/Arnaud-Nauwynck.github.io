@@ -83,7 +83,7 @@ Some links:
 
 
 Some Example of Cypher commands:
-{% highlight %}
+{% highlight text %}
 
 match(r:SymbolicRepoRef) return r
 
