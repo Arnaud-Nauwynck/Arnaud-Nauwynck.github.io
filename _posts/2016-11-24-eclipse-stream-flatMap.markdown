@@ -11,51 +11,51 @@ tags: eclipse jdk8 stream
 
 Here is a simple cartesian product
 {% highlight java %}
-	@Test public void test2() {
-		List<Integer> ls1 = range(1,2);
-		List<Integer> ls2 = range(3,4);
-		List<String> basicRes = new ArrayList<>();
-		for(int x1 : ls1) {
-			for(int x2: ls2) {
-				basicRes.add(x1 + "-" + x2);
-			}
+@Test 
+public void test2() {
+	List<Integer> ls1 = range(1,2);
+	List<Integer> ls2 = range(3,4);
+	List<String> basicRes = new ArrayList<>();
+	for(int x1 : ls1) {
+		for(int x2: ls2) {
+			basicRes.add(x1 + "-" + x2);
 		}
-
-		List<String> expectedRes = Arrays.asList("1-3", "1-4", "2-3", "2-4");
-		Assert.assertEquals(expectedRes, res);
 	}
+	List<String> expectedRes = Arrays.asList("1-3", "1-4", "2-3", "2-4");
+	Assert.assertEquals(expectedRes, res);
+}
 
-	private static List<Integer> range(int start, int end) {
-		List<Integer> res = new ArrayList<>();
-		for(int i = start; i <= end; i++) {
-			res.add(i);
-		}
-		return res;
+private static List<Integer> range(int start, int end) {
+	List<Integer> res = new ArrayList<>();
+	for(int i = start; i <= end; i++) {
+		res.add(i);
 	}
+	return res;
+}
 {% endhighlight %}
 
 Using Jdk8 Lambda ... you can do much more complex (but not more compact/readable..)
 
 This-one is still readable..
 {% highlight java %}
-		List<String> foreachRes = new ArrayList<>();
-		ls1.forEach(x1 -> {
-			ls2.forEach(x2 -> {
-				foreachRes.add(x1 + "-" + x2);
-			});
-		});
-		Assert.assertEquals(expectedRes, foreachRes);
+List<String> foreachRes = new ArrayList<>();
+ls1.forEach(x1 -> {
+	ls2.forEach(x2 -> {
+		foreachRes.add(x1 + "-" + x2);
+	});
+});
+Assert.assertEquals(expectedRes, foreachRes);
 {% endhighlight %}
 
 Then this one:
 {% highlight java %}
-		List<Integer> ls1 = range(1,2);
-		List<Integer> ls2 = range(3,4);
-		List<String> res = ls1.stream().flatMap(x1 -> 
-			ls2.stream().map(x2 -> 
-					x1 + "-" + x2))
-				.collect(Collectors.toList());
-		Assert.assertEquals(expectedRes, foreachRes);
+List<Integer> ls1 = range(1,2);
+List<Integer> ls2 = range(3,4);
+List<String> res = ls1.stream().flatMap(x1 -> 
+	ls2.stream().map(x2 -> 
+			x1 + "-" + x2))
+		.collect(Collectors.toList());
+Assert.assertEquals(expectedRes, foreachRes);
 {% endhighlight %}
 
 Also the non-indented version, make it a good candidate for Obfuscated Code Contest (JCC as CCC ??)
@@ -69,18 +69,18 @@ As far, as Good
 
 <H1>Little more ... Eclipse Bug in type inference</H1>
 
-Doing the same with 3 cartesian product instead of 2 ... it compiles in maven/javac but does not compile anymore in Eclipse !!
+Doing the same with 3 cartesian products instead of 2 ... it compiles in maven/javac but does not compile anymore in Eclipse !!
 
 {% highlight java %}
-	List<String> res = ls1.stream().flatMap(x1 -> 
-		ls2.stream().flatMap(x2 -> 
-			ls3.stream().map(x3 -> 
-				"" + x1 + "-" + x2 + "-" + x3)))
-			.collect(Collectors.toList());
+List<String> res = ls1.stream().flatMap(x1 -> 
+	ls2.stream().flatMap(x2 -> 
+		ls3.stream().map(x3 -> 
+			"" + x1 + "-" + x2 + "-" + x3)))
+		.collect(Collectors.toList());
 {% endhighlight %}
 
 Eclipse says Compile Error: 			
-"Type mismatch: cannot convert from List<Object> to List<String>"
+"Type mismatch: cannot convert from List&lt;Object> to List&lt;String>"
 
 
 This bug is already referenced in eclipse Bugzilla.
@@ -89,11 +89,11 @@ For example here <A href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=502158">
 A workaround is pretty easy, just add an explicit cast to the map() argument:
 
 {% highlight java %}
-	List<String> castRes = ls1.stream().flatMap((Function<Integer,Stream<String>>) x1 -> 
-			ls2.stream().flatMap(x2 -> 
-				ls3.stream().map(x3 -> 
-					"" + x1 + "-" + x2 + "-" + x3)))
-				.collect(Collectors.toList());
+List<String> castRes = ls1.stream().flatMap((Function<Integer,Stream<String>>) x1 -> 
+	ls2.stream().flatMap(x2 -> 
+		ls3.stream().map(x3 -> 
+			"" + x1 + "-" + x2 + "-" + x3)))
+		.collect(Collectors.toList());
 {% endhighlight %}
 
 
