@@ -32,7 +32,7 @@ Here is a simple cartesian product
 		}
 		return res;
 	}
-{% endhiglight %}
+{% endhighlight %}
 
 Using Jdk8 Lambda ... you can do much more complex (but not more compact/readable..)
 
@@ -45,7 +45,7 @@ This-one is still readable..
 			});
 		});
 		Assert.assertEquals(expectedRes, foreachRes);
-{% endhiglight %}
+{% endhighlight %}
 
 Then this one:
 {% highlight java %}
