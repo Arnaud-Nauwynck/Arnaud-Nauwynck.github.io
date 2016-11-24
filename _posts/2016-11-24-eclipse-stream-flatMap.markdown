@@ -60,7 +60,7 @@ Assert.assertEquals(expectedRes, foreachRes);
 
 Also the non-indented version, make it a good candidate for Obfuscated Code Contest (JCC as CCC ??)
 {% highlight java %}
-		List<String> res = ls1.stream().flatMap(x1 -> ls2.stream().map(x2 -> x1 + "-" + x2)).collect(Collectors.toList());
+List<String> res = ls1.stream().flatMap(x1 -> ls2.stream().map(x2 -> x1 + "-" + x2)).collect(Collectors.toList());
 {% endhighlight %}
 		
 
@@ -75,7 +75,7 @@ Doing the same with 3 cartesian products instead of 2 ... it compiles in maven/j
 List<String> res = ls1.stream().flatMap(x1 -> 
 	ls2.stream().flatMap(x2 -> 
 		ls3.stream().map(x3 -> 
-			"" + x1 + "-" + x2 + "-" + x3)))
+			x1 + "-" + x2 + "-" + x3)))
 		.collect(Collectors.toList());
 {% endhighlight %}
 
@@ -92,7 +92,7 @@ A workaround is pretty easy, just add an explicit cast to the map() argument:
 List<String> castRes = ls1.stream().flatMap((Function<Integer,Stream<String>>) x1 -> 
 	ls2.stream().flatMap(x2 -> 
 		ls3.stream().map(x3 -> 
-			"" + x1 + "-" + x2 + "-" + x3)))
+			x1 + "-" + x2 + "-" + x3)))
 		.collect(Collectors.toList());
 {% endhighlight %}
 
@@ -101,4 +101,3 @@ List<String> castRes = ls1.stream().flatMap((Function<Integer,Stream<String>>) x
 You can find this source code on my github here:
 <A href="https://github.com/Arnaud-Nauwynck/test-snippets/tree/master/test-map-flatMap">https://github.com/Arnaud-Nauwynck/test-snippets/tree/master/test-map-flatMap</A>
 
-				
