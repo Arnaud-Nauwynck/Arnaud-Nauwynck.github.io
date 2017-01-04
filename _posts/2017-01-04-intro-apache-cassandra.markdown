@@ -243,10 +243,11 @@ row f1:0, f2:1, f3:'value0-1:f3', f4:'value0-1:f4'
 
 
 
-<H1>Hours of unsuccessfull trials using springboot-data-cassandra (version 2) with cassandra (version 3)</H1>
+<H1>Using springboot-data-cassandra with cassandra (~ 2 hours trial solving errors)</H1>
 
-springboot is an amazing project, and springboot-data is also an amazing sub-project for simplifying java code for acessing repositories of data (not only jpa hibernate, but also key-values db, neo4j db, ...).
+Springboot is an amazing project, and springboot-data is also an amazing sub-project for simplifying java code for acessing repositories of data (not only jpa hibernate, but also key-values db, neo4j db, ...).
 <br/>
+
 To test a Java client using springboot-data + Cassandra, go to
 <A href="http://start.spring.io/">http://start.spring.io/</A>
 <br/>
@@ -461,7 +462,8 @@ find pk:(0,0) -> fr.an.tests.T1@4730e0f0
 find by f1=0 -> 2 elt(s)
 {% endhighlight %}
 
-
-
+Conclusion: waiting springboot-data to publish an official release that work successfully with Cassandra version 3 !!
+<BR/>
+Cassandra, springboot & springboot-data are amazing projects.
 
 
