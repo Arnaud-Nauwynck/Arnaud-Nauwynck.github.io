@@ -384,7 +384,7 @@ So I have added this line in file application.properties
 {% highlight text %}
 spring.data.cassandra.keyspace-name: myks
 {% endhighlight %}
- ... and re-executed "mvn install" !! (because eclipse does update resources files from src/main/resources to target/classes)
+ ... and re-executed "mvn install" !! (because eclipse does NOT update resources files from src/main/resources to target/classes)
 <br/>
 
 But apparently, another problem comes from a mismatch between client (v2) and server (v3):
