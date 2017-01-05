@@ -16,7 +16,7 @@ Everything is described in details here :
 
 First, check you have ~13 Go of free disk space ... 
 
-The only re-requisite is to have  have jdk8 + maven 3 installed. 
+The only pre-requisites is to have jdk8 + maven 3 installed.
 For example in a "setenv-jdk8-mvn3.sh" to source from your ~/.bashrc, you can add something like 
 {% highlight text %}
 export JAVA_HOME=/opt/devtools/jdk/jdk1.8.0
@@ -112,7 +112,7 @@ eclipse.platform.releng.aggregator$ du -sh
 12G	.
 {% endhighlight %}
 
-Even curious about code size ... there is ~ 55k java files (35k source java files + 20k test java files), representing 11 Million lines (8.5 Millions line of java code + 3 millions lines of java test )!!
+Even curious about code size ... there is ~ 55k java files (35k source java files + 20k test java files), representing 11M lines (8.5M line of java code + 3M lines of java test )!!
 
 {% highlight text %}
 $ find . -name \*.java | wc -l 
