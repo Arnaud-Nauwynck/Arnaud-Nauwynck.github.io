@@ -112,7 +112,7 @@ eclipse.platform.releng.aggregator$ du -sh
 12G	.
 {% endhighlight %}
 
-Even curious about code size ... there is ~ 55k java files (35k source java files + 20k test java files), representing 11M lines (8.5M line of java code + 3M lines of java test )!!
+Even curious about code size ... there is ~ 55k java files (35k source java files + 20k test java files), representing 11M lines (8.5M lines of java code + 3M lines of java test )!!
 
 {% highlight text %}
 $ find . -name \*.java | wc -l 
