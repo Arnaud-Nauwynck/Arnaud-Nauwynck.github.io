@@ -19,6 +19,10 @@ It allow java developper to write simpler code (small is beautifull), as in C#, 
 <p>
 As as additional motivation, it is a subject I have just proposed to Devoxx France 2017 "Call For Paper".
 <BR/>
+<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-devoxx-cfp.png" />
+<BR/>
+
+<BR/>
 
 
 <H1>Steps for using the magic "Lombokifier eclipse plugin"</H1>
