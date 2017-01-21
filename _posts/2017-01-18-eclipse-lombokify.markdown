@@ -175,6 +175,6 @@ protected static FieldGetterSetterDetection getOrCreateField(Map<String,FieldGet
 {% endhighlight %}	
 
 
-<H1>Day 2 ... see next post : <A href="{{site.url}}/assets/posts/2017/01/21/eclipse-lombokify-valvar.html">Lombokifier Eclipse Plugin (Day 2)</A></H1>
+<H1>Day 2 ... see next post : <A href="{{site.url}}/2017/01/21/eclipse-lombokify-valvar.html">Lombokifier Eclipse Plugin (Day 2)</A></H1>
 
 

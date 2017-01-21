@@ -8,7 +8,7 @@ tags: eclipse pde jdt lombok refactoring
 
 This is the second post on my proof-of-concept "Lombokifier Eclipse Plugin"<BR/>
 
-See previous post <A href="{{site.url}}/2017/01/19/eclipse-lombokify.html">here</A> 
+See previous post <A href="{{site.url}}/2017/01/18/eclipse-lombokify.html">here</A> 
 
 <BR/>
 Yesterday, I have shown the first post and the plugin to a fiend of mine, and we had this discussion:
@@ -40,19 +40,19 @@ On day 2, I worked again to improve this proof-of-concept plugin, and added ~3 m
 I have implemented the detections of "SomeLongTypeName localVar = new SomeLongTypeName();", and replacements with lombok "var localVar = new SomeLongTypeName();"
 
 <p>
-Isn't it true we ALL java developper are fed up typing things like 
+Isn't it true we ALL java developper are fed up typing things like ??
 {% highlight java%}
 Map<String,Map<Integer,List<Boolean>>> map = new HashMap<String,Map<Integer,List<Boolean>>>();
 Map<Integer,List<Boolean>> elt1 = map.get("key1");
 {% endhighlight %}
-&nbsp; instead of 
+instead of 
 {% highlight java%}
 val map = new HashMap<String,Map<Integer,List<Boolean>>>();
 val elt1 = map.get("key1");
 {% endhighlight %}	
 
 <P>
-Of course, Java will continue to evolve (slowly as it always did), and there is some hope with this JEP that it will be built-in in the langage soon:
+Of course, Java will continue to evolve (slowly as it always did), and there is some hope with this JEP (<A href="http://openjdk.java.net/jeps/286">http://openjdk.java.net/jeps/286</A>) that it will be built-in in the langage soon:
 <BR/>
 <A href="http://openjdk.java.net/jeps/286"><img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/jep286.png" /></A>
 
@@ -60,10 +60,42 @@ Of course, Java will continue to evolve (slowly as it always did), and there is 
 <P>
 Back to my plugin development, this was pretty easy, but I had to avoid few nasty cases:
 <ul>
-<li> it is useless to replace already primitive types, and also String type</li>
-<li> when using the jdk8 Diamond syntax, I had to preserve the type from the left hand side declaration, to put it to the right hand side! (to my opinion, a nasty mistake in java8 syntax)</li>
+<li> it is useless to replace already primitive types, and also String type
+{% highlight java %}
+int i = 10;
+// should not replace by
+var i = 10; 
+{% endhighlight %}
+</li>
+
+<li> when using the jdk8 Diamond syntax, I had to preserve the type from the left hand side declaration, to put it to the right hand side!
+{% endhighlight %}
+List<SomeLongTypeName> ls = new ArrayList<>();
+// => in Lombok:
+var ls = new ArrayList<SomeLongTypeName>();
+
+// this also work..
+Map<String,List<SomeLongTypeName>> map = new HashMap<>();
+// => in Lombok:
+var map = new HashMap<String, List<SomeLongTypeName>>();
+{% endhighlight %}
+
+To my opinion, this is a nasty mistake in java8 syntax, it is more logic for typed-inference langage to be like 
+{% highlight java %}
+List<> ls = new ArrayList<SomeLongTypeName>();
+{% endhighlight %}
+</li>
+
 <li> final variable must be replaced by "val", whereas modifiable variable must be replaced by "var"</li>
-<li> for explicitely "final" variable, the keyword modifier "final" must be removed</li>
+<li> for explicitely "final" variable, the keyword modifier "final" must be removed
+{% highlight java %}
+final SomeLongTypeName x = new SomeLongTypeName();
+// => in Lombok:
+val x = new SomeLongTypeName();
+// instead of ...   final var x = new SomeLongTypeName(); 
+{% endhighlight %}
+</li>
+
 <li> I should also detect "effective final" variables (variables that not explicitely marked as final, but bever modified anyway)..  I did not implement it yet, so they still are replaced with lombok "var".</li>
 </ul>
 
@@ -71,12 +103,12 @@ Back to my plugin development, this was pretty easy, but I had to avoid few nast
 <H2>Enough speaking ... Demo</H2>
 
 
-Now my settings have 2 checkboxes:
+Now the settings dialog window has 2 checkboxes:
 <BR/>
 <img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-Lombokify-params2.png" />
 <BR/>
 
-Click on Preview, to see how local variable are transformed<BR/>
+Click on Preview, to see how local variables are transformed<BR/>
 (notice the different cases using primitive, final declaration, diamond syntax ..)<BR/>
 <BR/>
 <img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-Lombokify-valvar.png" />
@@ -159,6 +191,7 @@ For the conference, I named it "lombokifier", which for French speaking, would s
 For the presentation title, I have chosen "Chérie, J'ai Lombokifié les Classes" (french translation of "Honey, I Shrunk the Classes"), which is a reference to the film "Honey, I Shrunk the Kids".
 </p>
 
+Reminder, it is open-source, fork it on GitHub <A href="https://github.com/Arnaud-Nauwynck/mytoolbox/tree/master/eclipse-plugins/fr.an.eclipse.tools.lombok">https://github.com/Arnaud-Nauwynck/mytoolbox .. fr.an.eclipse.tools.lombok</A> 
 
 
 
