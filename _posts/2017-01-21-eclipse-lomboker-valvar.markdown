@@ -16,7 +16,7 @@ Yesterday, I have shown the first post and the plugin to a fiend of mine, and we
 <blockquote>
 My Friend&gt; is it all Lombok is about?<BR/>
 
-Me&gt; Well, no Lombok also have the amazying val and var features, and much more<BR/>
+Me&gt; Well, no. Lombok also has the amazying val and var features, and much more<BR/>
 
 My Friend&gt; It is not supported in your plugin ?<BR/>
 
@@ -24,7 +24,7 @@ Me&gt; Well, yes it is true that would be easy to do.<BR/>
   &nbsp; But sorry about that, I only started yesterday and I spent just 3 hours on it...<BR/> 
   &nbsp; The longer was to write the post on my github.io<BR/>
    
-My Friend&gt; Ah, ok, I see  ... that's not so bad<BR/>
+My Friend&gt; Oh! OK! I see... that's not so bad. It is even pretty good.<BR/>
 </blockquote>
 
  
@@ -73,6 +73,8 @@ var i = 10;
 List<SomeLongTypeName> ls = new ArrayList<>();
 // => in Lombok:
 var ls = new ArrayList<SomeLongTypeName>();
+// this would be non-sense   
+// var ls = new ArrayList<>();
 
 // this also work..
 Map<String,List<SomeLongTypeName>> map = new HashMap<>();
