@@ -1,14 +1,14 @@
 ---
 layout: post
-title:  "Lombokifier Eclipse Plugin (Day 2)"
+title:  "Lomboker Eclipse Plugin (Day 2)"
 date:   2017-01-21 19:50:00
 categories: 
 tags: eclipse pde jdt lombok refactoring
 ---
 
-This is the second post on my proof-of-concept "Lombokifier Eclipse Plugin"<BR/>
+This is the second post on my proof-of-concept "Lomboker Eclipse Plugin"<BR/>
 
-See previous post <A href="{{site.url}}/2017/01/18/eclipse-lombokify.html">here</A> 
+See previous post <A href="{{site.url}}/2017/01/18/eclipse-lomboker.html">here</A> 
 
 <BR/>
 Yesterday, I have shown the first post and the plugin to a fiend of mine, and we had this discussion:
@@ -54,7 +54,7 @@ val elt1 = map.get("key1");
 <P>
 Of course, Java will continue to evolve (slowly as it always did), and there is some hope with this JEP (<A href="http://openjdk.java.net/jeps/286">http://openjdk.java.net/jeps/286</A>) that it will be built-in in the langage soon:
 <BR/>
-<A href="http://openjdk.java.net/jeps/286"><img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/jep286.png" /></A>
+<A href="http://openjdk.java.net/jeps/286"><img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lomboker/jep286.png" /></A>
 
 
 <P>
@@ -69,7 +69,7 @@ var i = 10;
 </li>
 
 <li> when using the jdk8 Diamond syntax, I had to preserve the type from the left hand side declaration, to put it to the right hand side!
-{% endhighlight %}
+{% highlight java %}
 List<SomeLongTypeName> ls = new ArrayList<>();
 // => in Lombok:
 var ls = new ArrayList<SomeLongTypeName>();
@@ -105,18 +105,18 @@ val x = new SomeLongTypeName();
 
 Now the settings dialog window has 2 checkboxes:
 <BR/>
-<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-Lombokify-params2.png" />
+<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lomboker/screenshot-Lomboker-params2.png" />
 <BR/>
 
 Click on Preview, to see how local variables are transformed<BR/>
 (notice the different cases using primitive, final declaration, diamond syntax ..)<BR/>
 <BR/>
-<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-Lombokify-valvar.png" />
+<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lomboker/screenshot-Lomboker-valvar.png" />
 <BR/>
 
 And also the same with foreach loops 
 <BR/>
-<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-Lombokify-foreach.png" />
+<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lomboker/screenshot-Lomboker-foreach.png" />
 <BR/>
 
 
@@ -187,8 +187,7 @@ Now there would be an official "lomboker" tool.
 </p>
 
 <p>
-For the conference, I named it "lombokifier", which for French speaking, would suggest that it would mix the code in so small parts that it would liquify it. <BR/>
-For the presentation title, I have chosen "Chérie, J'ai Lombokifié les Classes" (french translation of "Honey, I Shrunk the Classes"), which is a reference to the film "Honey, I Shrunk the Kids".
+For the presentation title, I have chosen "Chérie, J'ai Lomboké les Classes" (french translation of "Honey, I Shrunk the Classes"), which is a reference to the film "Honey, I Shrunk the Kids".
 </p>
 
 Reminder, it is open-source, fork it on GitHub <A href="https://github.com/Arnaud-Nauwynck/mytoolbox/tree/master/eclipse-plugins/fr.an.eclipse.tools.lombok">https://github.com/Arnaud-Nauwynck/mytoolbox .. fr.an.eclipse.tools.lombok</A> 

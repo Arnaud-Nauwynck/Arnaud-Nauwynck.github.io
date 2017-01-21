@@ -1,12 +1,12 @@
 ---
 layout: post
-title:  "Lombokifier Eclipse Plugin"
+title:  "Lomboker Eclipse Plugin"
 date:   2017-01-18 23:40:00
 categories: 
 tags: eclipse pde jdt lombok refactoring
 ---
 
-I wanted to write a simple eclipse plugin to "Lombokify classes"
+I wanted to write a simple eclipse plugin to "Lombok classes"
 
 <H1>Motivations</H1>
 
@@ -19,37 +19,37 @@ It allow java developper to write simpler code (small is beautifull), as in C#, 
 <p>
 As as additional motivation, it is a subject I have just proposed to Devoxx France 2017 "Call For Paper".
 <BR/>
-<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-devoxx-cfp.png" />
+<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lomboker/screenshot-devoxx-cfp.png" />
 <BR/>
 
 <BR/>
 
 
-<H1>Steps for using the magic "Lombokifier eclipse plugin"</H1>
+<H1>Steps for using the magic "Lomboker eclipse plugin"</H1>
 
 Images worth thousands words.
 <BR/>
 Here is how to use it.
 <BR/>
 
-Select either Java Project(s), Java Package(s) or Java class(es), and right click for refactoring menu action: "recursive Lombokify" 
+Select either Java Project(s), Java Package(s) or Java class(es), and right click for refactoring menu action: "recursive Lomboker" 
 <BR/>
-<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-Lombokify-selection.png" />
+<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lomboker/screenshot-Lomboker-selection.png" />
 <BR/>
 
 Choose some settings (currently supports only @Getter / @Setter refactoring)
 <BR/>
-<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-Lombokify-params.png" />
+<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lomboker/screenshot-Lomboker-params.png" />
 <BR/>
 
 Click on Preview, then Ok
 <BR/>
-<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-Lombokify-preview.png" />
+<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lomboker/screenshot-Lomboker-preview.png" />
 <BR/>
 
 And here you are!
 <BR/>
-<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lombokify/screenshot-Lombokify-res.png" />
+<img src="{{site.url}}/assets/posts/2017-01-19-eclipse-lomboker/screenshot-Lomboker-res.png" />
 <BR/>
 
 
@@ -68,7 +68,7 @@ It is open-source, see here: <A href="https://github.com/Arnaud-Nauwynck/mytoolb
 <BR/>
 There is some boiler-plate... not very interresting to detail. (dependency to other plugins fr.an.eclipse.pattern, etc.)
 <BR/>
-Basically, it allows to handle user selection and recurse on each *.java file, then call the magic Lombokify transformation on each parsed AST, and save it back to java file.
+Basically, it allows to handle user selection and recurse on each *.java file, then call the magic Lomboker transformation on each parsed AST, and save it back to java file.
 <BR/>
 
 The first code I wrote took me ~2 hours, for detecting getter/setter methods and changing them to @Getter and @Setter.<BR/>
@@ -175,6 +175,5 @@ protected static FieldGetterSetterDetection getOrCreateField(Map<String,FieldGet
 {% endhighlight %}	
 
 
-<H1>Day 2 ... see next post : <A href="{{site.url}}/2017/01/21/eclipse-lombokify-valvar.html">Lombokifier Eclipse Plugin (Day 2)</A></H1>
-
+<H1>Day 2 ... see next post : <A href="{{site.url}}/2017/01/21/eclipse-lomboker-valvar.html">Lomboker Eclipse Plugin (Day 2)</A></H1>
 
