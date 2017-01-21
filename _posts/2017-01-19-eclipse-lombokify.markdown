@@ -71,7 +71,9 @@ There is some boiler-plate... not very interresting to detail. (dependency to ot
 Basically, it allows to handle user selection and recurse on each *.java file, then call the magic Lombokify transformation on each parsed AST, and save it back to java file.
 <BR/>
 
-The pure transformation part is very simple, it is only ~ 90 lines as copyed here:
+The first code I wrote took me ~2 hours, for detecting getter/setter methods and changing them to @Getter and @Setter.<BR/>
+It is very simple, representing ~90 lines of AST tree manipulation in eclipse.<BR/>
+Here is and extract of the code:
 
 {% highlight java %}
 private static final String LOMBOK_PACKAGE = "lombok";
@@ -171,4 +173,8 @@ protected static FieldGetterSetterDetection getOrCreateField(Map<String,FieldGet
 	return res;
 }
 {% endhighlight %}	
+
+
+<H1>Day 2 ... see next post : <A href="{{site.url}}/assets/posts/2017/01/21/eclipse-lombokify-valvar.html">Lombokifier Eclipse Plugin (Day 2)</A></H1>
+
 
