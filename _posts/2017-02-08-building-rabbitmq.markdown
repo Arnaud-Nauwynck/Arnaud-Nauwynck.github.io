@@ -298,6 +298,10 @@ Cluster status of node node1@arn ...
 ,{alarms,[{node2@arn,[]},{node1@arn,[]}]}
 ]
 
+$ ./node1-ctl.sh set_policy ha-all "^ha\." '{"ha-mode":"all"}' 
+Setting policy "ha-all" for pattern "^ha\." to "{"ha-mode":"all"}" with priority "0" for vhost "/" ...
+
+
 # Checking clust_status on other node: node2
 $ ./node2-ctl.sh cluster_status
 Cluster status of node node2@arn ...
@@ -312,11 +316,232 @@ Cluster status of node node2@arn ...
 {% endhighlight %}
 
 
+Testing with a (java springboot) client to send messages and listen messages... then kill node1, restart node1, kill node2, restart node2 ....
+
+I get error in sendMessage() : "Auto recovery connection is not currently open"
+
+{% highlight text %}
+2017-02-09 23:26:57.746 ERROR 6438 --- [127.0.0.1:15672] c.r.c.impl.ForgivingExceptionHandler     : Caught an exception when recovering topology Caught an exception while recovering binding between spring-boot-exchange and spring-boot: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+
+com.rabbitmq.client.TopologyRecoveryException: Caught an exception while recovering binding between spring-boot-exchange and spring-boot: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverBindings(AutorecoveringConnection.java:645) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverEntities(AutorecoveringConnection.java:584) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.beginAutomaticRecovery(AutorecoveringConnection.java:506) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.access$000(AutorecoveringConnection.java:53) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection$1.recoveryCanBegin(AutorecoveringConnection.java:435) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.notifyRecoveryCanBeginListeners(AMQConnection.java:693) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.doFinalShutdown(AMQConnection.java:687) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection$MainLoop.run(AMQConnection.java:577) [amqp-client-4.0.1.jar:4.0.1]
+	at java.lang.Thread.run(Thread.java:744) [na:1.8.0]
+{% endhighlight %}
+	
+
+To make the sending more Robust (springboot does not auto-retry on sending??), I added explicitely a retry loop
+	
+{% highlight java %}
+    	for (int i = 0; i < 100; i++) {
+	        System.out.println("Sending message[" + i + "]...");
+	        
+	        for(int retryCount = 0; ; retryCount++) {
+		        try {
+		        	rabbitTemplate.convertAndSend(Application.queueName, "Hello from RabbitMQ[" + i + "]");
+		        	if (retryCount > 0) {
+		        		System.out.println("#### OK Sent message[" + i + "]   (after " + retryCount + " retries)");
+		        	}
+		        	break;
+		        } catch(Exception ex) {
+		        	System.out.println("Failed to send message[" + i + "]  .. retry!! (ex was " + ex.getMessage() + ")");
+		        	Thread.sleep(1000);
+		        	continue;
+		        }
+	        }
+	        
+	        receiver.getLatch().await(10000, TimeUnit.MILLISECONDS);
+    	
+	        Thread.sleep(3000);
+    	}
+{% endhighlight %}
+
+
+I expect all messages that are sent succesfully to be consumed later ...
+Unfortunatly, it is NOT the case. There are missing messages, never received? !! 
+
+{% highlight text %}
+
+Sending message[20]...
+Received <Hello from RabbitMQ[20]>
+Sending message[21]...
+Received <Hello from RabbitMQ[21]>
+Sending message[22]...
+Sending message[23]...
+Sending message[24]...
+2017-02-10 00:23:01.726  WARN 20642 --- [127.0.0.1:15772] c.r.c.impl.ForgivingExceptionHandler     : An unexpected connection driver error occured (Exception message: Connection reset)
+2017-02-10 00:23:01.731 ERROR 20642 --- [127.0.0.1:15772] o.s.a.r.c.CachingConnectionFactory       : Channel shutdown: connection error
+2017-02-10 00:23:01.731 ERROR 20642 --- [127.0.0.1:15772] o.s.a.r.c.CachingConnectionFactory       : Channel shutdown: connection error
+Sending message[25]...
+Failed to send message[25]  .. retry!! (ex was Auto recovery connection is not currently open)
+2017-02-10 00:23:02.182  WARN 20642 --- [    container-1] o.s.a.r.l.SimpleMessageListenerContainer : Consumer raised exception, processing can restart if the connection factory supports it
+
+com.rabbitmq.client.ShutdownSignalException: connection error
+	at com.rabbitmq.client.impl.AMQConnection.startShutdown(AMQConnection.java:861) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.shutdown(AMQConnection.java:851) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.handleFailure(AMQConnection.java:674) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.access$400(AMQConnection.java:47) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection$MainLoop.run(AMQConnection.java:575) ~[amqp-client-4.0.1.jar:4.0.1]
+	at java.lang.Thread.run(Thread.java:744) [na:1.8.0]
+Caused by: java.net.SocketException: Connection reset
+	at java.net.SocketInputStream.read(SocketInputStream.java:189) ~[na:1.8.0]
+	at java.net.SocketInputStream.read(SocketInputStream.java:121) ~[na:1.8.0]
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:246) ~[na:1.8.0]
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:265) ~[na:1.8.0]
+	at java.io.DataInputStream.readUnsignedByte(DataInputStream.java:288) ~[na:1.8.0]
+	at com.rabbitmq.client.impl.Frame.readFrom(Frame.java:91) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.SocketFrameHandler.readFrame(SocketFrameHandler.java:164) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection$MainLoop.run(AMQConnection.java:571) ~[amqp-client-4.0.1.jar:4.0.1]
+	... 1 common frames omitted
+
+2017-02-10 00:23:02.184  INFO 20642 --- [    container-1] o.s.a.r.l.SimpleMessageListenerContainer : Restarting Consumer@21719a0: tags=[{amq.ctag-HKMJICvgBpjioX2BmcDytA=ha.spring-boot}], channel=Cached Rabbit Channel: AMQChannel(amqp://guest@127.0.0.1:15772/,1), conn: Proxy@55ad6766 Shared Rabbit Connection: SimpleConnection@7bfe7c5d [delegate=amqp://guest@127.0.0.1:15772/, localPort= 50290], acknowledgeMode=AUTO local queue size=0
+2017-02-10 00:23:02.188 ERROR 20642 --- [    container-2] o.s.a.r.l.SimpleMessageListenerContainer : Failed to check/redeclare auto-delete queue(s).
+
+org.springframework.amqp.rabbit.connection.AutoRecoverConnectionNotCurrentlyOpenException: Auto recovery connection is not currently open
+	at org.springframework.amqp.rabbit.connection.SimpleConnection.isOpen(SimpleConnection.java:95) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.CachingConnectionFactory$ChannelCachingConnectionProxy.isOpen(CachingConnectionFactory.java:1151) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.CachingConnectionFactory.getChannel(CachingConnectionFactory.java:420) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.CachingConnectionFactory.access$1500(CachingConnectionFactory.java:97) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.CachingConnectionFactory$ChannelCachingConnectionProxy.createChannel(CachingConnectionFactory.java:1084) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.core.RabbitTemplate.doExecute(RabbitTemplate.java:1435) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.core.RabbitTemplate.execute(RabbitTemplate.java:1411) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.core.RabbitTemplate.execute(RabbitTemplate.java:1387) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.core.RabbitAdmin.getQueueProperties(RabbitAdmin.java:336) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.redeclareElementsIfNecessary(SimpleMessageListenerContainer.java:1114) [spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer.access$1100(SimpleMessageListenerContainer.java:95) [spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1333) [spring-rabbit-1.7.0.RELEASE.jar:na]
+	at java.lang.Thread.run(Thread.java:744) [na:1.8.0]
+
+Failed to send message[25]  .. retry!! (ex was Auto recovery connection is not currently open)
+Failed to send message[25]  .. retry!! (ex was Auto recovery connection is not currently open)
+Failed to send message[25]  .. retry!! (ex was Auto recovery connection is not currently open)
+Failed to send message[25]  .. retry!! (ex was Auto recovery connection is not currently open)
+2017-02-10 00:23:06.751 ERROR 20642 --- [127.0.0.1:15772] c.r.c.impl.ForgivingExceptionHandler     : Caught an exception when recovering topology Caught an exception while recovering exchange ha.spring-boot-exchange: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+
+com.rabbitmq.client.TopologyRecoveryException: Caught an exception while recovering exchange ha.spring-boot-exchange: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverExchanges(AutorecoveringConnection.java:597) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverEntities(AutorecoveringConnection.java:582) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.beginAutomaticRecovery(AutorecoveringConnection.java:506) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.access$000(AutorecoveringConnection.java:53) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection$1.recoveryCanBegin(AutorecoveringConnection.java:435) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.notifyRecoveryCanBeginListeners(AMQConnection.java:693) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.doFinalShutdown(AMQConnection.java:687) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection$MainLoop.run(AMQConnection.java:577) [amqp-client-4.0.1.jar:4.0.1]
+	at java.lang.Thread.run(Thread.java:744) [na:1.8.0]
+Caused by: com.rabbitmq.client.AlreadyClosedException: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+	at com.rabbitmq.client.impl.AMQChannel.ensureIsOpen(AMQChannel.java:198) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQChannel.rpc(AMQChannel.java:244) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQChannel.privateRpc(AMQChannel.java:222) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQChannel.exnWrappingRpc(AMQChannel.java:117) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.ChannelN.exchangeDeclare(ChannelN.java:763) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.ChannelN.exchangeDeclare(ChannelN.java:705) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.ChannelN.exchangeDeclare(ChannelN.java:50) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.RecordedExchange.recover(RecordedExchange.java:35) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverExchanges(AutorecoveringConnection.java:593) [amqp-client-4.0.1.jar:4.0.1]
+	... 8 common frames omitted
+
+2017-02-10 00:23:06.752 ERROR 20642 --- [127.0.0.1:15772] c.r.c.impl.ForgivingExceptionHandler     : Caught an exception when recovering topology Caught an exception while recovering queue ha.spring-boot: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+
+com.rabbitmq.client.TopologyRecoveryException: Caught an exception while recovering queue ha.spring-boot: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverQueues(AutorecoveringConnection.java:632) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverEntities(AutorecoveringConnection.java:583) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.beginAutomaticRecovery(AutorecoveringConnection.java:506) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.access$000(AutorecoveringConnection.java:53) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection$1.recoveryCanBegin(AutorecoveringConnection.java:435) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.notifyRecoveryCanBeginListeners(AMQConnection.java:693) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.doFinalShutdown(AMQConnection.java:687) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection$MainLoop.run(AMQConnection.java:577) [amqp-client-4.0.1.jar:4.0.1]
+	at java.lang.Thread.run(Thread.java:744) [na:1.8.0]
+Caused by: com.rabbitmq.client.AlreadyClosedException: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+	at com.rabbitmq.client.impl.AMQChannel.ensureIsOpen(AMQChannel.java:198) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQChannel.rpc(AMQChannel.java:244) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQChannel.privateRpc(AMQChannel.java:222) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQChannel.exnWrappingRpc(AMQChannel.java:117) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.ChannelN.queueDeclare(ChannelN.java:948) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.ChannelN.queueDeclare(ChannelN.java:50) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.RecordedQueue.recover(RecordedQueue.java:53) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverQueues(AutorecoveringConnection.java:608) [amqp-client-4.0.1.jar:4.0.1]
+	... 8 common frames omitted
+
+2017-02-10 00:23:06.754 ERROR 20642 --- [127.0.0.1:15772] c.r.c.impl.ForgivingExceptionHandler     : Caught an exception when recovering topology Caught an exception while recovering binding between ha.spring-boot-exchange and ha.spring-boot: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+
+com.rabbitmq.client.TopologyRecoveryException: Caught an exception while recovering binding between ha.spring-boot-exchange and ha.spring-boot: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverBindings(AutorecoveringConnection.java:645) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverEntities(AutorecoveringConnection.java:584) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.beginAutomaticRecovery(AutorecoveringConnection.java:506) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.access$000(AutorecoveringConnection.java:53) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection$1.recoveryCanBegin(AutorecoveringConnection.java:435) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.notifyRecoveryCanBeginListeners(AMQConnection.java:693) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection.doFinalShutdown(AMQConnection.java:687) [amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQConnection$MainLoop.run(AMQConnection.java:577) [amqp-client-4.0.1.jar:4.0.1]
+	at java.lang.Thread.run(Thread.java:744) [na:1.8.0]
+Caused by: com.rabbitmq.client.AlreadyClosedException: connection is already closed due to connection error; cause: java.net.SocketException: Connection reset
+	at com.rabbitmq.client.impl.AMQChannel.ensureIsOpen(AMQChannel.java:198) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQChannel.rpc(AMQChannel.java:244) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQChannel.privateRpc(AMQChannel.java:222) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.AMQChannel.exnWrappingRpc(AMQChannel.java:117) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.ChannelN.queueBind(ChannelN.java:1057) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.ChannelN.queueBind(ChannelN.java:50) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.RecordedQueueBinding.recover(RecordedQueueBinding.java:30) ~[amqp-client-4.0.1.jar:4.0.1]
+	at com.rabbitmq.client.impl.recovery.AutorecoveringConnection.recoverBindings(AutorecoveringConnection.java:641) [amqp-client-4.0.1.jar:4.0.1]
+	... 8 common frames omitted
+
+#### OK Sent message[25]   (after 5 retries)
+2017-02-10 00:23:07.191  WARN 20642 --- [    container-2] o.s.a.r.l.SimpleMessageListenerContainer : Consumer raised exception, processing can restart if the connection factory supports it
+
+org.springframework.amqp.rabbit.connection.AutoRecoverConnectionNotCurrentlyOpenException: Auto recovery connection is not currently open
+	at org.springframework.amqp.rabbit.connection.SimpleConnection.isOpen(SimpleConnection.java:95) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.CachingConnectionFactory$ChannelCachingConnectionProxy.isOpen(CachingConnectionFactory.java:1151) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.CachingConnectionFactory.getChannel(CachingConnectionFactory.java:420) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.CachingConnectionFactory.access$1500(CachingConnectionFactory.java:97) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.CachingConnectionFactory$ChannelCachingConnectionProxy.createChannel(CachingConnectionFactory.java:1084) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.ConnectionFactoryUtils$1.createChannel(ConnectionFactoryUtils.java:95) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.ConnectionFactoryUtils.doGetTransactionalResourceHolder(ConnectionFactoryUtils.java:144) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.connection.ConnectionFactoryUtils.getTransactionalResourceHolder(ConnectionFactoryUtils.java:76) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.listener.BlockingQueueConsumer.start(BlockingQueueConsumer.java:505) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer$AsyncMessageProcessingConsumer.run(SimpleMessageListenerContainer.java:1335) ~[spring-rabbit-1.7.0.RELEASE.jar:na]
+	at java.lang.Thread.run(Thread.java:744) [na:1.8.0]
+
+2017-02-10 00:23:07.192  INFO 20642 --- [    container-2] o.s.a.r.l.SimpleMessageListenerContainer : Restarting Consumer@4c66db5: tags=[{}], channel=null, acknowledgeMode=AUTO local queue size=0
+Received <Hello from RabbitMQ[25]>
+Sending message[26]...
+Received <Hello from RabbitMQ[26]>
+Sending message[27]...
+Received <Hello from RabbitMQ[27]>
+Sending message[28]...
+Received <Hello from RabbitMQ[28]>
+{% endhighlight %}
+
+
+
+Where is the Problem ?
+<BR/>
+Maybe the queue in mode "auto-delete" is not the correct settings: the queue mmay be deleted with pending messages while lossing connection, then recreated just after with message lost.
+<BR/>
+My test-case is special because my consumer and publisher are shring the same channel/connection (in same java process)!
+<BR/> 
+Maybe the consumer with "acknowledgeMode=AUTO" is not the good consumer settings, because the connection may be lost during the consume ??
+
+NO Idea yet ... investigating ...
+
+
+ 
+
+
 <H2>Conclusion</H2>
 
 OK to compile Elixir+Erlang+RabbitMQ all from github
 <BR/>
-Next step ... connecting a AMQP client, and checking 
+Connecting a AMQP client, is easy.
+<BR/>
+Ensuring Clustering + High Availability really works is not trivial !!! By default, it does not work !!!
+<BR/> 
 
 
 
