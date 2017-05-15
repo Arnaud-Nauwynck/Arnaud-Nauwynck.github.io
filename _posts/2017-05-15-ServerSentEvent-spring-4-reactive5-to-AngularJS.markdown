@@ -397,7 +397,7 @@ testing SSE GET request (with timeout after 30s)
 <img src="{{site.url}}/assets/posts/2017-05-15-ServerSentEvent-spring-4-reactive5-to-AngularJS/screenshot-curl-last-event-id.png"/>
 
 Test posting message directly from curl command  (with verbose mode):
-<img src="{{site.url}}/assets/posts/2017-05-15-ServerSentEvent-spring-4-reactive5-to-AngularJS/screenshot-post-message-verbose.png"/>
+<img src="{{site.url}}/assets/posts/2017-05-15-ServerSentEvent-spring-4-reactive5-to-AngularJS/screenshot-curl-post-msg-verbose.png"/>
 
 
 <H1>Details analysis of timed-events logs</H1>
@@ -472,7 +472,7 @@ fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:
 {%endhighlight text %}
 
 
-Logs from client-side using chorme dev tools:
+Logs from client-side using chrome dev tools:
 <img src="{{site.url}}/assets/posts/2017-05-15-ServerSentEvent-spring-4-reactive5-to-AngularJS/screenshot-logs-chrome.png"/>
 
 
