@@ -378,6 +378,105 @@ angular.module('myapp', [ ])
 {%endhighlight javascript %}
 
 
+<H1>Testing It...</H1>
+
+Run it: start main class from springboot within your IDE  (or mvn spring-boot:run)
+<BR/>
+
+Testing using web client: open 2 browsers on url 
+   http://localhost:8081/chat-angularjs/index.html
+
+<img src="{{site.url}}/assets/posts/2017-05-15-ServerSentEvent-spring-4-reactive5-to-AngularJS/screenshot-web-client.png"/>
+<BR/>
+
+
+Testing using curl shell commands:
+
+testing SSE GET request (with timeout after 30s)
+
+<img src="{{site.url}}/assets/posts/2017-05-15-ServerSentEvent-spring-4-reactive5-to-AngularJS/screenshot-curl-last-event-id.png"/>
+
+Test posting message directly from curl command  (with verbose mode):
+<img src="{{site.url}}/assets/posts/2017-05-15-ServerSentEvent-spring-4-reactive5-to-AngularJS/screenshot-post-message-verbose.png"/>
+
+
+<H1>Details analysis of timed-events logs</H1>
+
+Here are commented logs from both client and server:
+ 
+Logs on server:
+
+<img src="{{site.url}}/assets/posts/2017-05-15-ServerSentEvent-spring-4-reactive5-to-AngularJS/screenshot-logs-server.png"/>
+
+{%highlight text %}
+fr.an.tests.MyRestController             : msg #1: "(BOT) server start"
+  // at server startup, msg#1 is published (no client connected yet)
+  // on server-side, List of recent msg: [ msg#1 ], 
+  // msg sequence number incremented to 2  
+
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:null  
+  // <= initial connection from client "bob"
+  // not "last-event-id" known from client => client receive all recent msgs from server: [ msg#0 ]
+  // client1 as now "last-event-id: 1" 
+
+  // after 30s, client1 GET request is timeouting
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:1     
+  // reconnect from client1 => re-susbscrive to events, using "last-event-id: 1"
+  // no new messages since #1 => no events sent, connection pending
+  
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:1     
+  // again .. GET Timeout + reconnect
+  
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:null
+  // <= initial connection with last-event-id from client2 "john"
+  // not "last-event-id" known from client2 => client receive all recent msgs from server: [ msg#0 ]
+  // client2 as now "last-event-id: 1" 
+  
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:1
+  // timeout+reconnect from client (1 or 2?)
+
+fr.an.tests.MyRestController             : receive msg chatRoom:Default from:john msg: Hello bob
+  // POST msg#2 from john => published to both connected client1 & client2 
+  // client1 connected => status:  received msgs:[msg#1, msg#2]  last-event-id: 2
+  // client2 connected => status:  received msgs:[msg#1, msg#2]  last-event-id: 2
+  
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:2
+  // client1 timeout .. reconnect after 3s using "last-event-id: 2"
+  // no new messages received
+  
+  // client2 timeout ... will reconnect next in 3s..
+  
+fr.an.tests.MyRestController             : receive msg chatRoom:Default from:bob msg: Hi john
+  // POST msg #3 to client1   (client2 currently disconnected)
+  
+  /// status:
+  // client1: connected,    received msgs:[msg#1, msg#2, msg#3]  last-event-id: 3
+  // client2: disconnected, received msgs:[msg#1, msg#2]  last-event-id: 2
+  
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:2
+  // reconnection from client2 using last-event-id: 2
+  // msg #3 was NOT received during 3s re-connection delay => client2 received missing msg #3
+  // status
+  // client1: connected, received msgs:[msg#1, msg#2, msg#3]  last-event-id: 3
+  // client2: connected, received msgs:[msg#1, msg#2, msg#3]  last-event-id: 3
+   
+   
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:3
+  // reconnection from client2...msg #3 already received
+
+fr.an.tests.MyRestController             : receive msg chatRoom:Default from:john msg: How are you ?
+fr.an.tests.MyRestController             : receive msg chatRoom:Default from:bob msg: fine
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:4
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:5
+fr.an.tests.MyRestController             : subscribeMessagesSpring5 lastEventId:5
+{%endhighlight text %}
+
+
+Logs from client-side using chorme dev tools:
+<img src="{{site.url}}/assets/posts/2017-05-15-ServerSentEvent-spring-4-reactive5-to-AngularJS/screenshot-logs-chrome.png"/>
+
+
+
 <H1>Conclusion</H1>
 
 Server-Sent-Event works great, and are really simple !
