@@ -1,13 +1,13 @@
 ---
 layout: post
-title:  "Introduction to Cryptography"
-date:   2017-06-18 19:00:00
+title:  "Introduction to Image Analysis"
+date:   2017-06-21 02:30:00
 categories: 
-tags: Cryptography Math RSA
+tags: Image-Analysis
 ---
 
-<H1>A Not-So-Short Introduction to Cryptography </H1>
+<H1>A Not-So-Short Introduction to Image Analysis </H1>
 
 
-<A href="{{site.url}}/assets/posts/2017-06-18-Intro-Cryptography/Intro-Cryptography.pdf">Intro-Cryptography.pdf</A>
+<A href="{{site.url}}/assets/posts/2017-06-21-Intro-ImageAnalysis/Intro-ImageAnalysis.pdf">Intro-ImageAnalysis.pdf</A>
 
