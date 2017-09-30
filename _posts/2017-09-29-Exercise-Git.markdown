@@ -8,7 +8,7 @@ tags: git scm
 
 <H1>Discovery Exercise on Git for Beginners</H1>
 
-There are many online trainings for git
+There are many online training for git
 <ul>
 <li> <A href="https://www.google.fr/search?q=git+training">https://www.google.fr/search?q=git+training</A> </li>
 <li> <A href="https://try.github.io/">https://try.github.io/</A> </li>
@@ -49,7 +49,7 @@ fatal: Not a git repository (or any of the parent directories): .git
 {%endhighlight%}
  
 
-Init a new local git repository 
+Initialize a new local git repository 
 {%highlight shell%}
 $ git init
 Initialized empty Git repository in /home/arnaud/tp-git/.git/
@@ -361,7 +361,7 @@ $ git oneline  # idem.. (no branches yet)
 {%endhighlight%}
 
 
-Do a local un-committed modif:
+Do a local un-committed change:
 
 {%highlight shell%}
 $ echo "temporary-change" >> file1.txt
@@ -380,7 +380,7 @@ index e685709..bf1f340 100644
 {%endhighlight%}
 
 
-Undo local uncommitted changes:
+Undo local uncommitted change:
 {%highlight shell%}
 $ git checkout HEAD -- file1.txt
 $ git status
@@ -426,7 +426,7 @@ $ git lol
 
 <H1>Question 5 - branch, merge</H1>
 
-Create a local new branch, swicth to this new branch
+Create a local new branch, switch to this new branch
 
 {%highlight shell%}
 $ git branch
@@ -490,7 +490,7 @@ $ cat file1.txt
 {%endhighlight%}
 
 
-Reapeat Same question... but do simultaneously changes on "branch1" and "master" before merging (on separate file names, so not causing conflicts)
+Repeat Same question... but do simultaneously changes on "branch1" and "master" before merging (on separate file names, so not causing conflicts)
 
 before merge:
 {%highlight shell%}
