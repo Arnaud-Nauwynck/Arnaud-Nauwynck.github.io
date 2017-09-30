@@ -16,5 +16,5 @@ github_username:  Arnaud-Nauwynck
 # Build settings
 markdown: kramdown
 
-highlighter: pygments
+# highlighter: pygments
 
