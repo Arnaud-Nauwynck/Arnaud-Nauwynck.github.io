@@ -5,7 +5,7 @@ description: >
   My personal github.io web site: blog, articles, ...
 baseurl: ""
 
-# TEMPOARY before asset/ images are uploaded
+# TEMPORARY before asset/ images are uploaded
 # url: "http://localhost:4000"
 url: "http://arnaud-nauwynck.github.io"
 
