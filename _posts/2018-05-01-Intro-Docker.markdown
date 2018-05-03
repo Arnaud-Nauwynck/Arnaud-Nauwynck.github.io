@@ -7,9 +7,30 @@ tags: docker kubernetes
 ---
 
 
-<H1>Docker</H1>
+<H1>Presetnation to Container, Docker, Kubernetes</H1>
 
-Some slides URLs .. 
+<ul>
+
+<li>
+<A href="{{site.url}}/docs/Intro-VM-Container.pdf">Intro-VM-Container.pdf</A>
+</li>
+
+<li> 
+<A href="{{site.url}}/docs/Intro-Docker.pdf">Intro-Docker.pdf</A>
+</li>
+
+<li> 
+<A href="{{site.url}}/docs/Intro-Kubernetes.pdf">Intro-Kubernetes.pdf ... to be done</A>
+</li>
+
+</ul> 
+
+
+
+<H1>Some slides URLs ..</H1>
+
+<H2>Docker</H2>
+ 
 
 <ul>
 <li> <A href="http://douche.name/presentation-docker/#1">http://douche.name/presentation-docker/#1</A>
@@ -24,7 +45,7 @@ Some slides URLs ..
 </ul>
 
 
-<H1>Kubernetes</H1>
+<H2>Kubernetes</H2>
 
 <ul>
 
