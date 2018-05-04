@@ -20,7 +20,7 @@ tags: docker kubernetes
 </li>
 
 <li> 
-<A href="{{site.url}}/docs/Intro-Kubernetes.pdf">Intro-Kubernetes.pdf ... to be done</A>
+<A href="{{site.url}}/docs/Intro-Kubernetes.pdf">Intro-Kubernetes.pdf</A>
 </li>
 
 </ul> 
