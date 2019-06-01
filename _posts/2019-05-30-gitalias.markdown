@@ -1,0 +1,118 @@
+---
+layout: post
+title:  "My Git Aliases"
+date:   2019-05-30 16:00:00
+categories: 
+tags: git
+---
+
+<H2>My Git Aliases</H2>
+
+<H3> Finding my config aliases </H3>
+
+{% highlight shell %}
+git config --global -l
+{% endhighlight %}
+
+
+Editing:
+
+{% highlight shell %}
+git config --global -e
+{% endhighlight %}
+
+or directly 
+{% highlight shell %}
+vi ~/.gitconfig
+{% endhighlight %}
+
+
+<H3> LOL .. a better git log, without less interactive mode</H3>
+
+The Alias "git lol" became a standard
+{% highlight %}
+  lol = log --graph --decorate --pretty=oneline --abbrev-commit
+{% endhighlight %}
+
+Personnaly, I prefer showing only the recent last 20, in a non interactive mode. So I redefine it, and use "loless" as the origin "lol" with less.
+
+Same for "lola", which show all branches.
+
+{% highlight %}
+  lol = log --graph --decorate --pretty=oneline --abbrev-commit -n 20
+  loless = log --graph --decorate --pretty=oneline --abbrev-commit
+  lola = log --graph --decorate --pretty=oneline --abbrev-commit --all -n 20
+  lolaless = log --graph --decorate --pretty=oneline --abbrev-commit --all
+{% highlight %}
+
+
+<H3> ~/.gitconfig </H3>
+
+{% highlight %}
+[alias]
+  co = checkout
+  ci = commit
+  ca = commit --amend
+  cia = commit -a
+  can = commit --amend --no-edit
+  com = checkout master
+  st = status
+  s = status --short
+  b = branch
+  ba = branch -a
+  br = branch
+  current = rev-parse --abbrev-ref HEAD
+  hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
+  day = log --pretty=format:'%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset' --abbrev-commit --date=relative --since="24.hours"
+  hard = reset --hard origin/master
+  home = !"git com && git fop && git hard && git st"
+  pages = checkout gh-pages
+  pages-hard = reset --hard origin/gh-pages
+  pages-home = !"git pages && git fop && git pages-hard && git st"
+  fresh = !"git home && git co -b"
+  waste = !"git home && git bleach"
+  uncommit = reset --hard @{u}
+  recommit = commit --amend --no-edit
+  rebuild = commit --allow-empty -m ''
+  redo = rebase -i head~1
+  redq = rebase -i head~9
+  repush = !"git recommit && git push"
+  type = cat-file -t
+  dump = cat-file -p
+  d = diff
+  di = diff
+  df = diff
+  dc = diff --cached
+  conflicts = diff --name-only --diff-filter=U
+  lg = log -p
+  lol = log --graph --decorate --pretty=oneline --abbrev-commit -n 20
+  loless = log --graph --decorate --pretty=oneline --abbrev-commit
+  lola = log --graph --decorate --pretty=oneline --abbrev-commit --all -n 20
+  lolaless = log --graph --decorate --pretty=oneline --abbrev-commit --all
+  ll = log --pretty=format:'%C(yellow)%h%Creset %C(green)%cd%Creset%x09%C(yellow)%d%Creset %s [%C(red)%an%Creset]' --graph --date=relative --decorate
+  ls = ls-files
+  ign = ls-files -o -i --exclude-standard
+  sf = show --decorate --pretty=short --name-only
+  ss = show --stat
+  sc = log --max-count=1 --pretty=fuller --decorate
+  puhs = push
+  pus = push
+  pu = push
+  pt = !"git push --tags"
+  pp = !"git pu && git pt"
+  p = pull
+  pul = pull
+  pr = pull --rebase
+  fo = fetch origin
+  fp = fetch --prune
+  fop = fetch origin --prune
+  merge-theirs = merge -s recursive -X theirs --no-ff
+  ls-subtrees = !"git log | grep git-subtree-dir | awk '{ print $2 }'"
+  mop = !"git com && git branch --merged master | grep -v '\\* master' | xargs -n 1 git branch -d"
+  bleach = !"git branch | grep --invert-match "master" | xargs git branch -D"
+  rpo = remote prune origin
+  mm = merge master --no-edit
+  f = "!git ls-files | grep -i"
+  gr = grep -Ii
+  la = "!git config -l | grep alias | cut -c 7-"
+{% endhighlight %}
