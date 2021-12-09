@@ -109,10 +109,12 @@ Tester (et expliquer) les résultats pour les paramètres suivant:
 - ./javaecho.sh '*'
 - ./javaecho.sh \*
 - ./javaecho.sh '\*'
-- i=1; ./javaecho.sh $1
-- i=1; ./javaecho.sh "$1"
-- i=1; ./javaecho.sh '$1'
-- i=1; ./javaecho.sh \$1
+- i=1; ./javaecho.sh $i
+- i=1; ./javaecho.sh ${i}
+- i=1; ./javaecho.sh "$i"
+- i=1; ./javaecho.sh '$i'
+- i=1; ./javaecho.sh "${i}"
+- i=1; ./javaecho.sh \$i
 
 <H2>Question 8</H2>
 
@@ -126,7 +128,7 @@ java -cp bin EchoMain $*
 
 
 <H2>Question 9</H2>
-Modifier le programme java pour rajouter a la fin  "Thread.sleep(10000); System.ou.println("exiting..);"
+Modifier le programme java pour rajouter a la fin  "Thread.sleep(10000); Systemt.ou.println("exiting..);"
 
 Pendant que le programme tourne (attend), vérifier que vous voyez le processus avec les command "ps", "ps aux", et  "ls /proc/<<pid>>"
 
@@ -145,7 +147,7 @@ Hints:
 ./javaecho.sh @$
 pid=$!
 ...
-if [ ! -e /prod/$pid ]; then
+if [ ! -e /proc/${pid} ]; then
 	echo "le process est arreté.. relancer le"
 fi 
 
